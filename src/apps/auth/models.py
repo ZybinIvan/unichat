@@ -1,5 +1,5 @@
-from src.core.db import BaseModel
+from src.core.db import Model
 
 
-class RefreshTokenModel(BaseModel):
+class RefreshTokenModel(Model):
     ...

@@ -17,7 +17,7 @@ engine = create_async_engine(
 
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-class BaseModel(DeclarativeBase):
+class Model(DeclarativeBase):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True, unique=True
     )
