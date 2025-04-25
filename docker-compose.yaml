@@ -1,0 +1,50 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unichat
+    volumes:
+      - .:/app
+      - media:/media
+    ports:
+      - 8008:8000
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - SEARCH_API_URL=http://typesense:8108
+    depends_on:
+      - db
+    env_file: .env
+    command: uvicorn src.main:app --host 0.0.0.0 --reload
+  db:
+    container_name: unichat_db
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    ports:
+      - "5434:5432"
+    env_file: .env
+
+  redis_broker:
+    container_name: redis_broker
+    image: redis:latest
+    env_file: .env
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redisdata:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+
+volumes:
+  postgres_data:
+  media:
