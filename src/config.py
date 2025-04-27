@@ -41,3 +41,7 @@ class Settings(BaseSettings):
 
     jwt: JWTSettings = JWTSettings()
     email: ConnectionConfig = ConnectionConfig()
+
+
+def get_settings():
+    return Settings()
