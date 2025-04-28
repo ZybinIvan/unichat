@@ -1,3 +1,6 @@
+from typing import Annotated
+
+from fastapi import Depends
 from fastapi_mail import ConnectionConfig
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -45,3 +48,6 @@ class Settings(BaseSettings):
 
 def get_settings():
     return Settings()
+
+
+SettingsDepends = Annotated[Settings, Depends(get_settings)]

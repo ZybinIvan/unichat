@@ -1,8 +1,16 @@
-from src.apps.auth.schemas import TokenSchema
+import logging
+import uuid
+
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
+
+from src.apps.auth.schemas import TokenSchema, LoginSchema, AccessTokenPayloadSchema, RefreshTokenPayloadSchema
 from src.apps.auth.services import JWTService
+from src.apps.user.models import UserModel
 from src.apps.user.services import UserService
 
-from fastapi import Request
+from fastapi import Request, HTTPException, status
+
+logger = logging.getLogger(__name__)
 
 
 class AuthUseCase:
@@ -10,5 +18,39 @@ class AuthUseCase:
         self.jwt_service = jwt_service
         self.user_service = user_service
 
-    async def __call__(self, reqeust: Request) -> TokenSchema:
-        ...
+    async def __call__(self, request: Request, login_schema: LoginSchema) -> TokenSchema:
+        try:
+            user: UserModel = await self.user_service.get_by_field(request, email=login_schema.email)
+
+            if not pbkdf2_sha256.verify(login_schema.password, user.password):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Неверный email или пароль"
+                )
+
+            fingerprint = JWTService.get_client_fingerprint(request)
+            jti = str(uuid.uuid4())
+
+            # Собираем payload для access и refresh
+            access_payload = AccessTokenPayloadSchema(user_id=user.id)
+            refresh_payload = RefreshTokenPayloadSchema(
+                user_id=user.id,
+                jti=jti,
+                fingerprint=fingerprint
+            )
+
+            access_token = self.jwt_service.create_access_token(access_payload)
+            refresh_token = await self.jwt_service.create_refresh_token(
+                payload=refresh_payload,
+                session=request.state.session
+            )
+
+            return TokenSchema(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                token_type="Bearer"
+            )
+
+        except Exception as e:
+            logger.exception(e)
+            raise e

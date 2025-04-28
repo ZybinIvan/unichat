@@ -1,4 +1,6 @@
 from typing import TypeVar, Generic, Type, Any, Dict, Optional
+
+import sqlalchemy.exc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -43,3 +45,22 @@ class BaseRepository(Generic[T]):
         await session.delete(obj)
         await session.commit()
         return obj
+
+    async def get_by(
+            self,
+            session: AsyncSession,
+            **kwargs: Any
+    ) -> T:
+        """
+        Получить один объект по любому полю(ям), аналогично Django ORM .get().
+        Бросает NoResultFound, если не найдено,
+        MultipleResultsFound, если найдено больше одного.
+        """
+        stmt = select(self.model).filter_by(**kwargs)
+        result = await session.execute(stmt)
+        try:
+            return result.scalar_one()
+        except sqlalchemy.exc.NoResultFound:
+            raise sqlalchemy.exc.NoResultFound(f"{self.model.__name__} с параметрами {kwargs} не найден")
+        except sqlalchemy.exc.MultipleResultsFound:
+            raise sqlalchemy.exc.MultipleResultsFound(f"Найдено несколько {self.model.__name__} с параметрами {kwargs}")

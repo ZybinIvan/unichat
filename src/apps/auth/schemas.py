@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 
 
 class TokenSchema(BaseModel):
@@ -10,7 +10,7 @@ class TokenSchema(BaseModel):
 
 
 class LoginSchema(BaseModel):
-    phone: str = Field(examples=["79999999999"])
+    email: EmailStr
     password: str = Field(examples=["password"])
 
 
@@ -19,9 +19,9 @@ class AccessTokenPayloadSchema(BaseModel):
 
 
 class RefreshTokenPayloadSchema(BaseModel):
-    user_id: int = Field(alias="id")
+    user_id: int
     jti: str
-    # fingerprint: str
+    fingerprint: str
 
     model_config = ConfigDict(from_attributes=True)
 

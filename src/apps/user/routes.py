@@ -8,6 +8,5 @@ user_routes = APIRouter()
 
 
 @user_routes.post("/register")
-async def create(request: Request, register_schema: UserRegisterSchema, service: UserServiceDepends,
-                 session: SessionDepends) -> UserResponseSchema:
-    return await service.create(register_schema, session)
+async def create(request: Request, register_schema: UserRegisterSchema, service: UserServiceDepends) -> UserResponseSchema:
+    return await service.create(request, register_schema)
