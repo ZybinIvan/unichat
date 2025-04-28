@@ -28,7 +28,7 @@ services:
     env_file: .env
 
   redis_broker:
-    container_name: redis_broker
+    container_name: unichat_redis
     image: redis:latest
     env_file: .env
     ports:
