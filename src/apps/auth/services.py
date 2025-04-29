@@ -18,7 +18,7 @@ class RefreshTokenService:
         self.repository = repository
 
     async def get(self, id: int, session: AsyncSession) -> RefreshTokenModel:
-        return await self.repository.get(id, session)
+        return await self.repository.get_or_none(id, session)
 
     async def list(self, limit: int, skip: int, session: AsyncSession) -> List[RefreshTokenModel]:
         return await self.repository.list(limit, skip, session)

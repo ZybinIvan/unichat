@@ -3,8 +3,9 @@ import uuid
 
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
+from src.apps.auth.models import RefreshTokenModel
 from src.apps.auth.schemas import TokenSchema, LoginSchema, AccessTokenPayloadSchema, RefreshTokenPayloadSchema
-from src.apps.auth.services import JWTService
+from src.apps.auth.services import JWTService, RefreshTokenService
 from src.apps.user.models import UserModel
 from src.apps.user.services import UserService
 
@@ -51,6 +52,23 @@ class AuthUseCase:
                 token_type="Bearer"
             )
 
+        except Exception as e:
+            logger.exception(e)
+            raise e
+
+
+class RotationTokenUseCase:
+    def __init__(self, refresh_token_service: RefreshTokenService, user_service: UserService, jwt_service: JWTService):
+        self.refresh_token_service = refresh_token_service
+        self.user_service = user_service
+        self.jwt_service = jwt_service
+
+    async def __call__(self, request: Request, id: int) -> TokenSchema:
+        try:
+            refresh_token_from_db: RefreshTokenModel | None = await self.refresh_token_service.get(id, request.state.session)
+            if not refresh_token_from_db:
+                return TokenSchema(refresh_token="rewr", access_token="fds")
+            return TokenSchema(refresh_token=refresh_token_from_db.refresh_token, access_token="123")
         except Exception as e:
             logger.exception(e)
             raise e

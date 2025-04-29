@@ -1,8 +1,8 @@
-from typing import TypeVar, Generic, Type, Any, Dict, Optional
+from typing import TypeVar, Generic, Type, Any
 
 import sqlalchemy.exc
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 T = TypeVar("T")
 
@@ -12,7 +12,7 @@ class BaseRepository(Generic[T]):
 
     model: Type[T]
 
-    async def get(self, id: Any, session: AsyncSession) -> Optional[T]:
+    async def get_or_none(self, id: Any, session: AsyncSession) -> T | None:
         """Получить объект по ID"""
         return await session.get(self.model, id)
 
@@ -37,9 +37,9 @@ class BaseRepository(Generic[T]):
         await session.refresh(obj)
         return obj
 
-    async def delete(self, id: Any, session: AsyncSession) -> Optional[T]:
+    async def delete(self, id: Any, session: AsyncSession) -> T | None:
         """Удалить объект по ID"""
-        obj = await self.get(session, id)
+        obj = await self.get_or_none(session, id)
         if obj is None:
             return None
         await session.delete(obj)
