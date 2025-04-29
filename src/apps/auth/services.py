@@ -1,6 +1,7 @@
 import hashlib
+import logging
 from datetime import timedelta, timezone, datetime
-from typing import List
+from typing import List, Any
 
 import jwt
 from fastapi import Request
@@ -11,6 +12,8 @@ from src.apps.auth.models import RefreshTokenModel
 from src.apps.auth.repositories import RefreshTokenRepository
 from src.apps.auth.schemas import AccessTokenPayloadSchema, RefreshTokenPayloadSchema
 from src.config import Settings
+
+logger = logging.getLogger(__name__)
 
 
 class RefreshTokenService:
@@ -25,6 +28,28 @@ class RefreshTokenService:
 
     async def create(self, refresh_token: str, session: AsyncSession) -> RefreshTokenModel:
         return await self.repository.create(refresh_token, session)
+
+    async def get_by_field(
+            self,
+            request: Request,
+            **lookup: Any
+    ) -> RefreshTokenModel:
+        """
+        Получить пользователя по любому полю, например:
+        await user_service.get_by_field(request, email="user@example.com")
+        """
+        try:
+            user = await self.repository.get_by(
+                session=request.state.session,
+                **lookup
+            )
+            return user
+        except Exception as e:
+            logger.exception(e)
+            raise e
+
+    async def delete(self, request: Request, id: int) -> bool:
+        return await self.repository.delete(id, request.state.session)
 
 
 class JWTService:

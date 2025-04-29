@@ -28,5 +28,5 @@ async def login(request: Request, authenticate_use_case: AuthUseCaseDepends,
 
 
 @auth_routes.post('/refresh', response_model=TokenSchema)
-async def rotate_token(request: Request, refresh_token: int, use_case: RotateTokenUseCaseDepends):
+async def rotate_token(request: Request, refresh_token: str, use_case: RotateTokenUseCaseDepends):
     return await use_case(request, refresh_token)

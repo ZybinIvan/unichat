@@ -63,12 +63,43 @@ class RotationTokenUseCase:
         self.user_service = user_service
         self.jwt_service = jwt_service
 
-    async def __call__(self, request: Request, id: int) -> TokenSchema:
+    async def __call__(self, request: Request, refresh_token: str) -> TokenSchema:
         try:
-            refresh_token_from_db: RefreshTokenModel | None = await self.refresh_token_service.get(id, request.state.session)
+            refresh_token_from_db: RefreshTokenModel | None = await self.refresh_token_service.get_by_field(
+                request, refresh_token=refresh_token)
             if not refresh_token_from_db:
-                return TokenSchema(refresh_token="rewr", access_token="fds")
-            return TokenSchema(refresh_token=refresh_token_from_db.refresh_token, access_token="123")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Refresh token not found",
+
+                )
+
+            token_payload: dict = self.jwt_service.decode(refresh_token)
+            user: UserModel = await self.user_service.get_by_field(request, id=token_payload['user_id'])
+
+            fingerprint = JWTService.get_client_fingerprint(request)
+            jti = str(uuid.uuid4())
+
+            access_payload = AccessTokenPayloadSchema(user_id=user.id)
+            refresh_payload = RefreshTokenPayloadSchema(
+                user_id=user.id,
+                jti=jti,
+                fingerprint=fingerprint
+            )
+
+            access_token = self.jwt_service.create_access_token(access_payload)
+            refresh_token = await self.jwt_service.create_refresh_token(
+                payload=refresh_payload,
+                session=request.state.session
+            )
+
+            await self.refresh_token_service.delete(request, refresh_token_from_db.id)
+
+            return TokenSchema(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                token_type="Bearer"
+            )
         except Exception as e:
             logger.exception(e)
             raise e

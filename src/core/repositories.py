@@ -37,14 +37,14 @@ class BaseRepository(Generic[T]):
         await session.refresh(obj)
         return obj
 
-    async def delete(self, id: Any, session: AsyncSession) -> T | None:
+    async def delete(self, id: Any, session: AsyncSession) -> bool:
         """Удалить объект по ID"""
-        obj = await self.get_or_none(session, id)
+        obj = await self.get_or_none(id, session)
         if obj is None:
-            return None
+            return True
         await session.delete(obj)
         await session.commit()
-        return obj
+        return True
 
     async def get_by(
             self,
