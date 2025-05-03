@@ -44,3 +44,4 @@ def get_rotate_token_use_case(refresh_token_service: RefreshTokenServiceDepends,
 
 
 RotateTokenUseCaseDepends = Annotated[RotationTokenUseCase, Depends(get_rotate_token_use_case)]
+

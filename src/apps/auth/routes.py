@@ -2,7 +2,8 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.apps.auth.depends import RefreshTokenServiceDepends, AuthUseCaseDepends, RotateTokenUseCaseDepends
-from src.apps.auth.schemas import TokenSchema, LoginSchema
+from src.apps.auth.schemas import TokenSchema, LoginSchema, RegisterUniversitySchema, RegisterTeacherSchema, \
+    RegisterStudentSchema
 from src.apps.user.depends import UserServiceDepends
 from src.apps.user.schemas import UserRegisterSchema, UserResponseSchema
 from src.core.depends import SessionDepends
@@ -30,3 +31,18 @@ async def login(request: Request, authenticate_use_case: AuthUseCaseDepends,
 @auth_routes.post('/refresh', response_model=TokenSchema)
 async def rotate_token(request: Request, refresh_token: str, use_case: RotateTokenUseCaseDepends):
     return await use_case(request, refresh_token)
+
+
+@auth_routes.post('/register_university')
+async def register_university(request: Request, register_university_schema: RegisterUniversitySchema, use_case):
+    ...
+
+
+@auth_routes.post('/register_teacher')
+async def register_teacher(request, register_teacher_schema: RegisterTeacherSchema, use_case):
+    ...
+
+
+@auth_routes.post('/register_student')
+async def register_student(request, register_student_schema: RegisterStudentSchema, use_case):
+    ...

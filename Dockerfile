@@ -17,4 +17,4 @@ RUN poetry install --no-root --no-interaction --no-ansi
 
 COPY . .
 
-CMD ["uvicorn","src.main:app", "--host", "0.0.0.0", "--reload"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--reload"]
