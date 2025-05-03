@@ -19,6 +19,7 @@ async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncS
 
 
 class Model(DeclarativeBase):
+    __abstract__ = True
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True, unique=True
     )

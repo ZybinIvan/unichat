@@ -46,5 +46,5 @@ class RegisterTeacherSchema(BaseRegisterSchema):
 
 class RegisterStudentSchema(BaseRegisterSchema):
     group_id: int
-    grade_book_number: str
+    record_book_number: str
     student_card: str

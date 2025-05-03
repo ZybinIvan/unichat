@@ -11,6 +11,7 @@ from src.config import Settings, get_settings
 from src.apps.auth.models import *
 from src.apps.chat.models import *
 from src.apps.user.models import *
+from src.apps.university.models import *
 
 config = context.config
 
