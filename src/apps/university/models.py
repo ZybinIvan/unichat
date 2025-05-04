@@ -17,9 +17,11 @@ class UniversityModel(Model):
     __tablename__ = "university"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    admin_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    admin_email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    admin_password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    patronymic: Mapped[str] = mapped_column(String(100), nullable=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     institutes: Mapped[list["InstituteModel"]] = relationship(
         back_populates="university", cascade="all, delete-orphan"
@@ -34,9 +36,9 @@ class InstituteModel(Model):
         ForeignKey("university.id", ondelete="CASCADE"), nullable=False
     )
 
-    __table_args__ = (
-        UniqueConstraint("university_id", "name", name="uq_institute_in_university"),
-    )
+    # __table_args__ = (
+    #     UniqueConstraint("university_id", "name", name="uq_institute_in_university"),
+    # )
 
     university: Mapped["UniversityModel"] = relationship(back_populates="institutes")
     departments: Mapped[list["DepartmentModel"]] = relationship(
@@ -52,9 +54,9 @@ class DepartmentModel(Model):
         ForeignKey("institute.id", ondelete="CASCADE"), nullable=False
     )
 
-    __table_args__ = (
-        UniqueConstraint("institute_id", "name", name="uq_department_in_institute"),
-    )
+    # __table_args__ = (
+    #     UniqueConstraint("institute_id", "name", name="uq_department_in_institute"),
+    # )
 
     institute: Mapped["InstituteModel"] = relationship(back_populates="departments")
     teachers: Mapped[list["TeacherModel"]] = relationship(
@@ -73,9 +75,9 @@ class GroupModel(Model):
         ForeignKey("department.id", ondelete="CASCADE"), nullable=False
     )
 
-    __table_args__ = (
-        UniqueConstraint("department_id", "name", name="uq_group_in_department"),
-    )
+    # __table_args__ = (
+    #     UniqueConstraint("department_id", "name", name="uq_group_in_department"),
+    # )
 
     department: Mapped["DepartmentModel"] = relationship(back_populates="groups")
     students: Mapped[list["StudentModel"]] = relationship(

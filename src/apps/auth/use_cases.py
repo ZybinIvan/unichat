@@ -6,8 +6,13 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from src.apps.auth.models import RefreshTokenModel
 from src.apps.auth.schemas import TokenSchema, LoginSchema, AccessTokenPayloadSchema, RefreshTokenPayloadSchema
 from src.apps.auth.services import JWTService, RefreshTokenService
-from src.apps.user.models import UserModel
-from src.apps.user.services import UserService
+from src.apps.university.models import UniversityModel
+from src.apps.university.schemas import UniversityResponseSchema, RegisterUniversitySchema, RegisterTeacherSchema, \
+    RegisterStudentSchema
+from src.apps.university.services import UniversityService
+from src.apps.user.models import UserModel, TeacherModel, StudentModel
+from src.apps.user.schemas import TeacherResponseSchema, StudentResponseSchema
+from src.apps.user.services import UserService, TeacherService, StudentService
 
 from fastapi import Request, HTTPException, status
 
@@ -103,3 +108,30 @@ class RotationTokenUseCase:
         except Exception as e:
             logger.exception(e)
             raise e
+
+
+class UniversityRegisterUseCase:
+    def __init__(self, university_service: UniversityService):
+        self.university_service = university_service
+
+    async def __call__(self, request: Request, register_schema: RegisterUniversitySchema) -> UniversityResponseSchema:
+        created_university: UniversityModel = await self.university_service.create(request, register_schema)
+        return UniversityResponseSchema.model_validate(created_university, from_attributes=True)
+
+
+class TeacherRegisterUseCase:
+    def __init__(self, teacher_service: TeacherService):
+        self.teacher_service = teacher_service
+
+    async def __call__(self, request: Request, register_schema: RegisterTeacherSchema) -> TeacherResponseSchema:
+        created_teacher: TeacherModel = await self.teacher_service.create(request, register_schema)
+        return TeacherResponseSchema.model_validate(created_teacher, from_attributes=True)
+
+
+class StudentRegisterUseCase:
+    def __init__(self, student_service: StudentService):
+        self.student_service = student_service
+
+    async def __call__(self, request: Request, register_schema: RegisterStudentSchema) -> StudentResponseSchema:
+        created_student: StudentModel = await self.student_service.create(request, register_schema)
+        return StudentResponseSchema.model_validate(created_student, from_attributes=True)

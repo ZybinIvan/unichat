@@ -16,3 +16,15 @@ class UserResponseSchema(BaseModel):
     last_name: str
     patronymic: str | None
     email: str
+
+
+class TeacherResponseSchema(BaseModel):
+    first_name: str
+    last_name: str
+    patronymic: str | None
+
+
+class StudentResponseSchema(BaseModel):
+    first_name: str
+    last_name: str
+    patronymic: str | None

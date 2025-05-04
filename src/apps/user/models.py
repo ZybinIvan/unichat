@@ -28,7 +28,7 @@ class TeacherModel(Model, TimestampMixin):
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
     patronymic: Mapped[str] = mapped_column(String(100), nullable=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     department_id: Mapped[int] = mapped_column(
         ForeignKey("department.id", ondelete="SET NULL"), nullable=True
@@ -46,7 +46,7 @@ class StudentModel(Model, TimestampMixin):
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     record_book_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     student_card: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     group_id: Mapped[int] = mapped_column(
         ForeignKey("group.id", ondelete="SET NULL"), nullable=True
