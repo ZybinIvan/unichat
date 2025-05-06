@@ -5,6 +5,7 @@ from src.apps.university.depends import CreateInstituteUseCaseDepends, CreateDep
     CreateGroupUseCaseDepends
 from src.apps.university.schemas import InstituteResponseSchema, InstituteCreateSchema, DepartmentCreateSchema, \
     DepartmentResponseSchema, GroupResponseSchema, GroupCreateSchema
+from src.core.depends import SessionDepends
 
 university_router = APIRouter()
 
@@ -24,3 +25,9 @@ async def create_department(request: Request, create_schema: DepartmentCreateSch
 @university_router.post("/groups", response_model=GroupResponseSchema)
 async def create_group(request: Request, create_schema: GroupCreateSchema, use_case: CreateGroupUseCaseDepends):
     return await use_case(request, create_schema)
+
+
+@university_router.post("/test", response_model=dict)
+async def tes_route(request: Request, session: SessionDepends):
+    print(session)
+    return {}

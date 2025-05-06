@@ -20,15 +20,21 @@ class UserModel(Model, TimestampMixin):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     avatar_path: Mapped[str] = mapped_column(String(255), nullable=True)
 
+    role: Mapped[str] = mapped_column("role", String(50), nullable=False)
 
-class TeacherModel(Model, TimestampMixin):
+    __mapper_args__ = {
+        'polymorphic_identity': 'user',
+        'polymorphic_on': role,
+    }
+
+
+class TeacherModel(UserModel):
     __tablename__ = "teacher"
 
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    patronymic: Mapped[str] = mapped_column(String(100), nullable=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"),
+        primary_key=True
+    )
 
     department_id: Mapped[int] = mapped_column(
         ForeignKey("department.id", ondelete="SET NULL"), nullable=True
@@ -36,20 +42,28 @@ class TeacherModel(Model, TimestampMixin):
 
     department: Mapped["DepartmentModel"] = relationship(back_populates="teachers")
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'teacher',
+    }
 
-class StudentModel(Model, TimestampMixin):
+
+class StudentModel(UserModel):
     __tablename__ = "student"
 
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    patronymic: Mapped[str] = mapped_column(String(100), nullable=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+
     record_book_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     student_card: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     group_id: Mapped[int] = mapped_column(
         ForeignKey("group.id", ondelete="SET NULL"), nullable=True
     )
 
     group: Mapped["GroupModel"] = relationship(back_populates="students")
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'student',
+    }
