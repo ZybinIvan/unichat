@@ -2,7 +2,6 @@ from fastapi import FastAPI, APIRouter
 
 from src.apps.auth.routes import auth_routes
 from src.apps.university.routes import university_router
-from src.apps.user.routes import user_routes
 
 
 def apply_routes(app: FastAPI) -> FastAPI:

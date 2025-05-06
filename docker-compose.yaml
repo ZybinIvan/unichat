@@ -15,7 +15,6 @@ services:
     depends_on:
       - db
     env_file: .env
-    command: uvicorn src.main:app --host 0.0.0.0 --reload
   db:
     container_name: unichat_db
     image: postgres:15-alpine
