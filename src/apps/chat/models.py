@@ -19,7 +19,7 @@ class Chat(Model):
     __tablename__ = 'chat'
 
     name: Mapped[str | None] = mapped_column(String, nullable=True)
-    participants: Mapped[list[UserModel]] = relationship('User', secondary=chat_participants, backref='chats')
+    participants: Mapped[list['UserModel']] = relationship('User', secondary=chat_participants, backref='chats')
 
 
 class Message(Model, TimestampMixin):
