@@ -1,4 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
+from fastapi_filter.contrib.sqlalchemy import Filter
+
+from src.apps.university.models import DepartmentModel, GroupModel, InstituteModel
 
 
 class BaseRegisterSchema(BaseModel):
@@ -40,6 +43,20 @@ class InstituteResponseSchema(BaseModel):
     university_id: int
 
 
+class InstituteUpdateSchema(BaseModel):
+    name: str | None = None
+
+
+class InstituteFilter(Filter):
+    name__ilike: str | None = None
+    university_id: int | None = None
+    order_by: list[str] | None = None
+
+    class Constants(Filter.Constants):
+        model = InstituteModel
+        ordering_field_name = "order_by"
+
+
 class DepartmentCreateSchema(BaseModel):
     institute_id: int
     name: str
@@ -51,6 +68,21 @@ class DepartmentResponseSchema(BaseModel):
     name: str
 
 
+class DepartmentUpdateSchema(BaseModel):
+    name: str | None = None
+    institute_id: int | None = None
+
+
+class DepartmentFilter(Filter):
+    name__ilike: str | None = None
+    institute_id: int | None = None
+    order_by: list[str] | None = None
+
+    class Constants(Filter.Constants):
+        model = DepartmentModel
+        ordering_field_name = "order_by"
+
+
 class GroupCreateSchema(BaseModel):
     department_id: int
     name: str
@@ -60,3 +92,18 @@ class GroupResponseSchema(BaseModel):
     id: int
     department_id: int
     name: str
+
+
+class GroupUpdateSchema(BaseModel):
+    name: str | None = None
+    department_id: int | None = None
+
+
+class GroupFilter(Filter):
+    name__ilike: str | None = None
+    department_id: int | None = None
+    order_by: list[str] | None = None
+
+    class Constants(Filter.Constants):
+        model = GroupModel
+        ordering_field_name = "order_by"

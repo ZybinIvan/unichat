@@ -1,71 +1,49 @@
-from typing import Annotated
+from dishka import Provider, Scope, make_async_container
+from dishka.integrations.fastapi import FastapiProvider
 
-from fastapi import Depends
-
+from src.core.depends import core_provider
+from src.apps.university.depends import university_provider
+from src.apps.user.repositories import UserRepository, TeacherRepository, StudentRepository
+from src.apps.user.services import UserService, TeacherService, StudentService
 from src.apps.auth.repositories import RefreshTokenRepository
 from src.apps.auth.services import RefreshTokenService, JWTService
-from src.apps.auth.use_cases import AuthUseCase, RotationTokenUseCase, UniversityRegisterUseCase, \
-    TeacherRegisterUseCase, StudentRegisterUseCase
-from src.apps.university.depends import UniversityServiceDepends
-from src.apps.user.depends import UserServiceDepends, TeacherServiceDepends, StudentServiceDepends
-from src.config import SettingsDepends
+from src.apps.auth.use_cases import (
+    AuthUseCase,
+    RotationTokenUseCase,
+    UniversityRegisterUseCase,
+    TeacherRegisterUseCase,
+    StudentRegisterUseCase,
+)
 
+# Провайдер для модуля "auth"
+auth_provider = Provider(scope=Scope.REQUEST)
 
-async def get_refresh_token_repository() -> RefreshTokenRepository:
-    return RefreshTokenRepository()
+# Регистрация зависимостей модуля User
+auth_provider.provide(UserRepository)
+auth_provider.provide(UserService)
+auth_provider.provide(TeacherRepository)
+auth_provider.provide(TeacherService)
+auth_provider.provide(StudentRepository)
+auth_provider.provide(StudentService)
 
+# Регистрация репозиториев и сервисов модуля Auth
+auth_provider.provide(RefreshTokenRepository)
+auth_provider.provide(RefreshTokenService)
+auth_provider.provide(JWTService)
 
-RefreshTokenRepositoryDepends = Annotated[RefreshTokenRepository, Depends(get_refresh_token_repository)]
+# Регистрация use-case'ов аутентификации и регистрации пользователей
+auth_provider.provide(AuthUseCase)
+auth_provider.provide(RotationTokenUseCase)
+auth_provider.provide(UniversityRegisterUseCase)
+auth_provider.provide(TeacherRegisterUseCase)
+auth_provider.provide(StudentRegisterUseCase)
 
+# Сборка контейнера Dishka (core + university + auth)
+container = make_async_container(
+    core_provider,
+    university_provider,
+    auth_provider,
+    FastapiProvider(),
+)
 
-async def get_refresh_token_service(repository: RefreshTokenRepositoryDepends) -> RefreshTokenService:
-    return RefreshTokenService(repository)
-
-
-RefreshTokenServiceDepends = Annotated[RefreshTokenService, Depends(get_refresh_token_service)]
-
-
-async def get_jwt_service(refresh_token_service: RefreshTokenServiceDepends,
-                          settings: SettingsDepends) -> JWTService:
-    return JWTService(refresh_token_service, settings)
-
-
-JWTServiceDepends = Annotated[JWTService, Depends(get_jwt_service)]
-
-
-# ------ UCE CASES ------
-
-async def get_auth_use_case(jwt_service: JWTServiceDepends, user_service: UserServiceDepends) -> AuthUseCase:
-    return AuthUseCase(jwt_service, user_service)
-
-
-AuthUseCaseDepends = Annotated[AuthUseCase, Depends(get_auth_use_case)]
-
-
-async def get_rotate_token_use_case(refresh_token_service: RefreshTokenServiceDepends, user_service: UserServiceDepends,
-                                    jwt_service: JWTServiceDepends) -> RotationTokenUseCase:
-    return RotationTokenUseCase(refresh_token_service, user_service, jwt_service)
-
-
-RotateTokenUseCaseDepends = Annotated[RotationTokenUseCase, Depends(get_rotate_token_use_case)]
-
-
-async def get_university_register_use_case(university_service: UniversityServiceDepends) -> UniversityRegisterUseCase:
-    return UniversityRegisterUseCase(university_service)
-
-
-UniversityRegisterUseCaseDepends = Annotated[UniversityRegisterUseCase, Depends(get_university_register_use_case)]
-
-
-async def get_teacher_register_use_case(teacher_service: TeacherServiceDepends) -> TeacherRegisterUseCase:
-    return TeacherRegisterUseCase(teacher_service)
-
-
-TeacherRegisterUseCaseDepends = Annotated[TeacherRegisterUseCase, Depends(get_teacher_register_use_case)]
-
-
-async def get_student_register_use_case(student_service: StudentServiceDepends) -> StudentRegisterUseCase:
-    return StudentRegisterUseCase(student_service)
-
-
-StudentRegisterUseCaseDepends = Annotated[StudentRegisterUseCase, Depends(get_student_register_use_case)]
+__all__ = ["container"]

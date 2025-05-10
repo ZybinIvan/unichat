@@ -3,6 +3,7 @@ from typing import TypeVar, Generic, Type, Any
 import sqlalchemy.exc
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_filter.contrib.sqlalchemy import Filter
 
 T = TypeVar("T")
 
@@ -16,9 +17,20 @@ class BaseRepository(Generic[T]):
         """Получить объект по ID"""
         return await session.get(self.model, id)
 
-    async def list(self, limit: int, skip: int, session: AsyncSession) -> list[T]:
+    async def list(
+        self,
+        limit: int,
+        skip: int,
+        session: AsyncSession,
+        filters: Filter | None = None,
+    ) -> list[T]:
         """Получить все объекты"""
         stmt = select(self.model)
+
+        if filters:
+            stmt = filters.filter(stmt)
+            stmt = filters.sort(stmt)
+
         stmt = stmt.limit(limit).offset(skip)
         result = await session.execute(stmt)
         return result.scalars().all()
@@ -46,11 +58,7 @@ class BaseRepository(Generic[T]):
         await session.commit()
         return True
 
-    async def get_by(
-            self,
-            session: AsyncSession,
-            **kwargs: Any
-    ) -> T:
+    async def get_by(self, session: AsyncSession, **kwargs: Any) -> T:
         """
         Получить один объект по любому полю(ям), аналогично Django ORM .get().
         Бросает NoResultFound, если не найдено,
@@ -61,6 +69,10 @@ class BaseRepository(Generic[T]):
         try:
             return result.scalar_one()
         except sqlalchemy.exc.NoResultFound:
-            raise sqlalchemy.exc.NoResultFound(f"{self.model.__name__} с параметрами {kwargs} не найден")
+            raise sqlalchemy.exc.NoResultFound(
+                f"{self.model.__name__} с параметрами {kwargs} не найден"
+            )
         except sqlalchemy.exc.MultipleResultsFound:
-            raise sqlalchemy.exc.MultipleResultsFound(f"Найдено несколько {self.model.__name__} с параметрами {kwargs}")
+            raise sqlalchemy.exc.MultipleResultsFound(
+                f"Найдено несколько {self.model.__name__} с параметрами {kwargs}"
+            )

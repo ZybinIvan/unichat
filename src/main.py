@@ -1,16 +1,8 @@
 import uvicorn
-from fastapi import FastAPI
 
-from src.apps.auth.routes import auth_routes
-from src.apps.user.routes import user_routes
 from src.bootstrap import create_app
 
 app = create_app()
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 
 @app.get("/hello/{name}")
