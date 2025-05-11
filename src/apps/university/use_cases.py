@@ -37,6 +37,14 @@ class CreateInstituteUseCase:
         )
 
 
+class RetrieveInstituteUseCase:
+    def __init__(self, service: InstituteService):
+        self.service = service
+
+    async def __call__(self, request: Request, institute_id: int):
+        return await self.service.get(request, institute_id)
+
+
 class ListInstitutesUseCase:
     def __init__(self, service: InstituteService):
         self.service = service
@@ -63,6 +71,14 @@ class DeleteInstituteUseCase:
 
     async def __call__(self, request: Request, institute_id: int):
         await self.service.delete(request, institute_id)
+
+
+class RetrieveDepartmentUseCase:
+    def __init__(self, service: DepartmentService):
+        self.service = service
+
+    async def __call__(self, request: Request, department_id: int):
+        return await self.service.get(request, department_id)
 
 
 class ListDepartmentsUseCase:
@@ -118,6 +134,14 @@ class CreateGroupUseCase:
     ) -> GroupResponseSchema:
         group: GroupModel = await self.group_service.create(request, create_schema)
         return GroupResponseSchema.model_validate(group, from_attributes=True)
+
+
+class RetrieveGroupUseCase:
+    def __init__(self, service: GroupService):
+        self.service = service
+
+    async def __call__(self, request: Request, group_id: int):
+        return await self.service.get(request, group_id)
 
 
 class ListGroupsUseCase:

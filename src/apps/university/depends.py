@@ -24,6 +24,9 @@ from src.apps.university.use_cases import (
     ListDepartmentsUseCase,
     ListGroupsUseCase,
     ListInstitutesUseCase,
+    RetrieveDepartmentUseCase,
+    RetrieveGroupUseCase,
+    RetrieveInstituteUseCase,
     UpdateDepartmentUseCase,
     UpdateGroupUseCase,
     UpdateInstituteUseCase,
@@ -47,16 +50,19 @@ university_provider.provide(CreateDepartmentUseCase)
 university_provider.provide(CreateGroupUseCase)
 
 university_provider.provide(InstituteService)
+university_provider.provide(RetrieveInstituteUseCase)
 university_provider.provide(ListInstitutesUseCase)
 university_provider.provide(UpdateInstituteUseCase)
 university_provider.provide(DeleteInstituteUseCase)
 
 university_provider.provide(DepartmentService)
+university_provider.provide(RetrieveDepartmentUseCase)
 university_provider.provide(ListDepartmentsUseCase)
 university_provider.provide(UpdateDepartmentUseCase)
 university_provider.provide(DeleteDepartmentUseCase)
 
 university_provider.provide(GroupService)
+university_provider.provide(RetrieveGroupUseCase)
 university_provider.provide(ListGroupsUseCase)
 university_provider.provide(UpdateGroupUseCase)
 university_provider.provide(DeleteGroupUseCase)

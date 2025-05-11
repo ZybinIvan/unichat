@@ -64,6 +64,11 @@ class InstituteService:
         institute: InstituteModel = InstituteModel(**create_schema.model_dump())
         return await self.institute_repository.create(institute, request.state.session)
 
+    async def get(self, request: Request, institute_id: int) -> InstituteModel:
+        return await self.institute_repository.get_by(
+            request.state.session, id=institute_id
+        )
+
     async def list(
         self, request: Request, limit: int, skip: int, filters: InstituteFilter
     ):
@@ -100,6 +105,11 @@ class DepartmentService:
             department, request.state.session
         )
 
+    async def get(self, request: Request, department_id: int) -> DepartmentModel:
+        return await self.department_repository.get_by(
+            request.state.session, id=department_id
+        )
+
     async def list(
         self, request: Request, limit: int, skip: int, filters: DepartmentFilter
     ):
@@ -133,6 +143,9 @@ class GroupService:
     ) -> GroupModel:
         group: GroupModel = GroupModel(**create_schema.model_dump())
         return await self.group_repository.create(group, request.state.session)
+
+    async def get(self, request: Request, group_id: int) -> GroupModel:
+        return await self.group_repository.get_by(request.state.session, id=group_id)
 
     async def list(self, request: Request, limit: int, skip: int, filters: GroupFilter):
         return await self.group_repository.list(
