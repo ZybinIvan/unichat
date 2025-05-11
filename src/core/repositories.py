@@ -1,5 +1,5 @@
 from typing import TypeVar, Generic, Type, Any
-
+import logging
 from asyncpg import ForeignKeyViolationError
 from fastapi import HTTPException, status
 import sqlalchemy.exc
@@ -16,6 +16,7 @@ from src.core.exceptions import (
 
 T = TypeVar("T")
 
+logger = logging.getLogger(__name__)
 
 class BaseRepository(Generic[T]):
     """Базовый репозиторий для наследования"""
@@ -52,17 +53,16 @@ class BaseRepository(Generic[T]):
         """Добавить новый объект в базу"""
         try:
             session.add(obj)
-            await session.commit()
-            await session.refresh(obj)
+            await session.flush()
             return obj
         except Exception as e:
+            logger.exception(e)
             raise OperationFailedException("create", str(e)) from e
 
     async def update(self, obj: T, session: AsyncSession) -> T:
         """Обновить уже существующий объект"""
         try:
             session.add(obj)
-            await session.commit()
             await session.refresh(obj)
             return obj
         except Exception as e:
@@ -75,7 +75,6 @@ class BaseRepository(Generic[T]):
             if obj is None:
                 raise NotFoundException(self.model.__name__, {"id": id})
             await session.delete(obj)
-            await session.commit()
             return True
         except NotFoundException:
             raise

@@ -13,6 +13,7 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
         async with async_session() as session:
             request.state.session = session
             response = await call_next(request)
+            await request.state.session.commit()
         return response
 
 

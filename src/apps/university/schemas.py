@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from fastapi_filter.contrib.sqlalchemy import Filter
 
 from src.apps.university.models import DepartmentModel, GroupModel, InstituteModel
@@ -68,6 +68,14 @@ class DepartmentResponseSchema(BaseModel):
     name: str
 
 
+class DepartmentDetailSchema(BaseModel):
+    id: int
+    name: str
+    institute_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class DepartmentUpdateSchema(BaseModel):
     name: str | None = None
     institute_id: int | None = None
@@ -92,6 +100,15 @@ class GroupResponseSchema(BaseModel):
     id: int
     department_id: int
     name: str
+
+
+class GroupDetailSchema(BaseModel):
+    id: int
+    name: str
+    institute_name: str
+    department_name: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GroupUpdateSchema(BaseModel):

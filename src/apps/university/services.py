@@ -16,8 +16,8 @@ from src.apps.university.repositories import (
     GroupRepository,
 )
 
-
 from src.apps.university.schemas import (
+    DepartmentDetailSchema,
     DepartmentFilter,
     DepartmentUpdateSchema,
     GroupFilter,
@@ -27,7 +27,7 @@ from src.apps.university.schemas import (
     DepartmentCreateSchema,
     GroupCreateSchema,
     InstituteFilter,
-    InstituteUpdateSchema,
+    InstituteUpdateSchema, GroupDetailSchema,
 )
 
 
@@ -36,10 +36,10 @@ class UniversityService:
         self.university_repository = university_repository
 
     async def create(
-        self, request: Request, register_schema: RegisterUniversitySchema
+            self, request: Request, register_schema: RegisterUniversitySchema
     ) -> UniversityModel:
         if not compare_digest(
-            register_schema.password.encode(), register_schema.password_repeat.encode()
+                register_schema.password.encode(), register_schema.password_repeat.encode()
         ):
             raise ValidationError("Пароли не совпадают")
 
@@ -59,7 +59,7 @@ class InstituteService:
         self.institute_repository = institute_repository
 
     async def create(
-        self, request: Request, create_schema: InstituteCreateSchema
+            self, request: Request, create_schema: InstituteCreateSchema
     ) -> InstituteModel:
         institute: InstituteModel = InstituteModel(**create_schema.model_dump())
         return await self.institute_repository.create(institute, request.state.session)
@@ -70,14 +70,14 @@ class InstituteService:
         )
 
     async def list(
-        self, request: Request, limit: int, skip: int, filters: InstituteFilter
+            self, request: Request, limit: int, skip: int, filters: InstituteFilter
     ):
         return await self.institute_repository.list(
             limit, skip, request.state.session, filters
         )
 
     async def update(
-        self, request: Request, institute_id: int, update_schema: InstituteUpdateSchema
+            self, request: Request, institute_id: int, update_schema: InstituteUpdateSchema
     ):
         instance = await self.institute_repository.get_by(
             request.state.session, id=institute_id
@@ -98,30 +98,35 @@ class DepartmentService:
         self.department_repository = department_repository
 
     async def create(
-        self, request: Request, create_schema: DepartmentCreateSchema
+            self, request: Request, create_schema: DepartmentCreateSchema
     ) -> DepartmentModel:
         department: DepartmentModel = DepartmentModel(**create_schema.model_dump())
         return await self.department_repository.create(
             department, request.state.session
         )
 
-    async def get(self, request: Request, department_id: int) -> DepartmentModel:
-        return await self.department_repository.get_by(
-            request.state.session, id=department_id
+    async def get(self, request: Request, department_id: int) -> DepartmentDetailSchema:
+        department = await self.department_repository.get_detail(
+            department_id, request.state.session,
+        )
+        return DepartmentDetailSchema(
+            id=department.id,
+            name=department.name,
+            institute_name=department.institute.name,
         )
 
     async def list(
-        self, request: Request, limit: int, skip: int, filters: DepartmentFilter
+            self, request: Request, limit: int, skip: int, filters: DepartmentFilter
     ):
         return await self.department_repository.list(
             limit, skip, request.state.session, filters
         )
 
     async def update(
-        self,
-        request: Request,
-        department_id: int,
-        update_schema: DepartmentUpdateSchema,
+            self,
+            request: Request,
+            department_id: int,
+            update_schema: DepartmentUpdateSchema,
     ):
         instance = await self.department_repository.get_by(
             request.state.session, id=department_id
@@ -139,13 +144,15 @@ class GroupService:
         self.group_repository = group_repository
 
     async def create(
-        self, request: Request, create_schema: GroupCreateSchema
+            self, request: Request, create_schema: GroupCreateSchema
     ) -> GroupModel:
         group: GroupModel = GroupModel(**create_schema.model_dump())
         return await self.group_repository.create(group, request.state.session)
 
-    async def get(self, request: Request, group_id: int) -> GroupModel:
-        return await self.group_repository.get_by(request.state.session, id=group_id)
+    async def get(self, request: Request, group_id: int) -> GroupDetailSchema:
+        group = await self.group_repository.get_detail(group_id, request.state.session)
+        return GroupDetailSchema(id=group.id, name=group.name, institute_name=group.department.institute.name,
+                                 department_name=group.department.name)
 
     async def list(self, request: Request, limit: int, skip: int, filters: GroupFilter):
         return await self.group_repository.list(
@@ -153,7 +160,7 @@ class GroupService:
         )
 
     async def update(
-        self, request: Request, group_id: int, update_schema: GroupUpdateSchema
+            self, request: Request, group_id: int, update_schema: GroupUpdateSchema
     ):
         instance = await self.group_repository.get_by(
             request.state.session, id=group_id

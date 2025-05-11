@@ -5,6 +5,7 @@ from starlette.requests import Request
 from dishka.integrations.fastapi import DishkaRoute
 
 from src.apps.university.schemas import (
+    DepartmentDetailSchema,
     DepartmentFilter,
     DepartmentUpdateSchema,
     GroupFilter,
@@ -16,7 +17,7 @@ from src.apps.university.schemas import (
     DepartmentResponseSchema,
     GroupResponseSchema,
     GroupCreateSchema,
-    InstituteUpdateSchema,
+    InstituteUpdateSchema, GroupDetailSchema,
 )
 
 from .use_cases import (
@@ -110,7 +111,7 @@ async def create_department(
 
 
 @department_router.get(
-    "/departments/{department_id}", response_model=DepartmentResponseSchema
+    "/departments/{department_id}", response_model=DepartmentDetailSchema
 )
 async def get_department(
     request: Request,
@@ -166,7 +167,7 @@ async def create_group(
     return await use_case(request, create_schema)
 
 
-@group_router.get("/groups/{group_id}", response_model=GroupResponseSchema)
+@group_router.get("/groups/{group_id}", response_model=GroupDetailSchema)
 async def get_group(
     request: Request,
     group_id: int,
