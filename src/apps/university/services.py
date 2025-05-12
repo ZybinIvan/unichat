@@ -112,7 +112,7 @@ class DepartmentService:
         return DepartmentDetailSchema(
             id=department.id,
             name=department.name,
-            institute_name=department.institute.name,
+            institute=department.institute
         )
 
     async def list(

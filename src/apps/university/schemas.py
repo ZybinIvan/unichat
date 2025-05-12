@@ -41,6 +41,7 @@ class InstituteResponseSchema(BaseModel):
     id: int
     name: str
     university_id: int
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InstituteUpdateSchema(BaseModel):
@@ -71,7 +72,7 @@ class DepartmentResponseSchema(BaseModel):
 class DepartmentDetailSchema(BaseModel):
     id: int
     name: str
-    institute_name: str
+    institute: InstituteResponseSchema
 
     model_config = ConfigDict(from_attributes=True)
 
