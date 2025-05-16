@@ -16,15 +16,20 @@ class BaseRegisterSchema(BaseModel):
 class RegisterUniversitySchema(BaseRegisterSchema):
     name: str
 
+    model_config = ConfigDict(extra="allow")
+
 
 class RegisterTeacherSchema(BaseRegisterSchema):
-    department_id: int
+    # department_id: int
+
+    model_config = ConfigDict(extra="allow")
 
 
 class RegisterStudentSchema(BaseRegisterSchema):
-    group_id: int
+    # group_id: int
     record_book_number: str
     student_card: str
+    model_config = ConfigDict(extra="allow")
 
 
 class UniversityResponseSchema(BaseModel):

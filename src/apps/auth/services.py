@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.apps.auth.models import RefreshTokenModel
 from src.apps.auth.repositories import RefreshTokenRepository, InviteRedisRepository
 from src.apps.auth.schemas import AccessTokenPayloadSchema, RefreshTokenPayloadSchema, InviteSchema
+from src.apps.user.enums import UserRole
 from src.apps.user.repositories import UserRepository
 from src.config import Settings
 
@@ -107,7 +108,7 @@ class JWTService:
 
 
 class InviteService:
-    INVITE_TTL = timedelta(minutes=1)
+    INVITE_TTL = timedelta(days=7)
 
     def __init__(self,
                  invite_repository: InviteRedisRepository,
@@ -138,8 +139,11 @@ class InviteService:
 
         return invite_id
 
+    async def _make_invite_link(self, register_url, invite_id) -> str:
+        return f"{register_url}{invite_id}"
+
     async def _send_email_invite(self, invite_schema: InviteSchema, invite_id: UUID) -> None:
-        invite_link = f"{invite_schema.register_url}{invite_id}"
+        invite_link = self._make_invite_link(invite_schema.register_url, invite_id)
         message = MessageSchema(
             subject="Приглашение на платформу",
             recipients=[invite_schema.invite_body.email],
@@ -153,10 +157,13 @@ class InviteService:
             self,
             request: Request,
             invite_schema: InviteSchema
-    ):
+    ) -> str | None:
         invite_id = await self._create_invite(request, invite_schema.invite_body)
+
+        if invite_schema.invite_body.role == UserRole.STUDENT:
+            return await self._make_invite_link(invite_schema.register_url, invite_id)
+
         await self._send_email_invite(invite_schema, invite_id)
 
-
-    async def get_invite_info(self, invite_id: str) -> ...:
+    async def get_invite_info(self, invite_id: str) -> dict | None:
         return await self.invite_repository.get(invite_id)

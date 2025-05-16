@@ -55,7 +55,7 @@ async def register_university(
         use_case: FromDishka[UniversityRegisterUseCase],
         invite_id: str = Query(...),
 ):
-    return await use_case(request, register_university_schema)
+    return await use_case(request, register_university_schema, invite_id)
 
 
 @auth_routes.post("/register_teacher", response_model=TeacherResponseSchema, status_code=201)
@@ -65,7 +65,7 @@ async def register_teacher(
         use_case: FromDishka[TeacherRegisterUseCase],
         invite_id: str = Query(...),
 ):
-    return await use_case(request, register_teacher_schema)
+    return await use_case(request, register_teacher_schema, invite_id)
 
 
 @auth_routes.post("/register_student", response_model=StudentResponseSchema, status_code=201)
@@ -75,10 +75,10 @@ async def register_student(
         use_case: FromDishka[StudentRegisterUseCase],
         invite_id: str = Query(...),
 ):
-    return await use_case(request, register_student_schema)
+    return await use_case(request, register_student_schema, invite_id)
 
 
-@auth_routes.post("/invite", response_model=None, status_code=201)
+@auth_routes.post("/invite", response_model=str | None, status_code=201)
 async def invite(
         request: Request,
         invite_schema: InviteSchema,

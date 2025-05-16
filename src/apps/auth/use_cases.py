@@ -20,6 +20,7 @@ from src.apps.university.schemas import (
     RegisterStudentSchema,
 )
 from src.apps.university.services import UniversityService
+from src.apps.user.enums import UserRole
 from src.apps.user.models import UserModel, TeacherModel, StudentModel
 from src.apps.user.schemas import TeacherResponseSchema, StudentResponseSchema
 from src.apps.user.services import UserService, TeacherService, StudentService
@@ -126,12 +127,18 @@ class RotationTokenUseCase:
 
 
 class UniversityRegisterUseCase:
-    def __init__(self, university_service: UniversityService):
+    def __init__(self, university_service: UniversityService, invite_service: InviteService):
         self.university_service = university_service
+        self.invite_service = invite_service
 
     async def __call__(
-            self, request: Request, register_schema: RegisterUniversitySchema
+            self, request: Request, register_schema: RegisterUniversitySchema, invite_id: str
     ) -> UniversityResponseSchema:
+        invite_info = await self.invite_service.get_invite_info(invite_id)
+
+        if not invite_info or invite_info.get("role", None) != UserRole.UNIVERSITY_ADMIN:
+            raise HTTPException(status_code=400, detail="Неверный invite_id")
+
         created_university: UniversityModel = await self.university_service.create(
             request, register_schema
         )
@@ -141,12 +148,20 @@ class UniversityRegisterUseCase:
 
 
 class TeacherRegisterUseCase:
-    def __init__(self, teacher_service: TeacherService):
+    def __init__(self, teacher_service: TeacherService, invite_service: InviteService):
         self.teacher_service = teacher_service
+        self.invite_service = invite_service
 
     async def __call__(
-            self, request: Request, register_schema: RegisterTeacherSchema
+            self, request: Request, register_schema: RegisterTeacherSchema, invite_id: str
     ) -> TeacherResponseSchema:
+        invite_info = await self.invite_service.get_invite_info(invite_id)
+
+        if not invite_info or invite_info.get("role", None) != UserRole.TEACHER:
+            raise HTTPException(status_code=400, detail="Неверный invite_id")
+
+        setattr(register_schema, "department_id", invite_info.get("department_id"))
+
         created_teacher: TeacherModel = await self.teacher_service.create(
             request, register_schema
         )
@@ -156,12 +171,20 @@ class TeacherRegisterUseCase:
 
 
 class StudentRegisterUseCase:
-    def __init__(self, student_service: StudentService):
+    def __init__(self, student_service: StudentService, invite_service: InviteService):
         self.student_service = student_service
+        self.invite_service = invite_service
 
     async def __call__(
-            self, request: Request, register_schema: RegisterStudentSchema
+            self, request: Request, register_schema: RegisterStudentSchema, invite_id: str
     ) -> StudentResponseSchema:
+        invite_info = await self.invite_service.get_invite_info(invite_id)
+
+        if not invite_info or invite_info.get("role", None) != UserRole.STUDENT:
+            raise HTTPException(status_code=400, detail="Неверный invite_id")
+
+        setattr(register_schema, "group_id", invite_info.get("group_id"))
+
         created_student: StudentModel = await self.student_service.create(
             request, register_schema
         )
@@ -174,7 +197,7 @@ class InviteUseCase:
     def __init__(self, invite_service: InviteService):
         self.invite_service = invite_service
 
-    async def __call__(self, request: Request, invite_schema: InviteSchema):
+    async def __call__(self, request: Request, invite_schema: InviteSchema) -> str | None:
         return await self.invite_service.invite(request, invite_schema)
 
 
