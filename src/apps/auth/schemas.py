@@ -1,6 +1,8 @@
-from typing import Literal
+from typing import Literal, Union
 
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
+
+from src.apps.user.enums import UserRole
 
 
 class TokenSchema(BaseModel):
@@ -15,7 +17,10 @@ class LoginSchema(BaseModel):
 
 
 class AccessTokenPayloadSchema(BaseModel):
-    user_id: int
+    user_id: int = Field(alias="id")
+    role: UserRole
+
+    model_config = ConfigDict(use_enum_values=True, from_attributes=True)
 
 
 class RefreshTokenPayloadSchema(BaseModel):
@@ -25,3 +30,26 @@ class RefreshTokenPayloadSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class StudentInviteSchema(BaseModel):
+    email: EmailStr
+    group_id: int
+    role: Literal[UserRole.STUDENT]
+
+
+class TeacherInviteSchema(BaseModel):
+    email: EmailStr
+    department_id: int
+    role: Literal[UserRole.TEACHER]
+
+
+class UniversityInviteSchema(BaseModel):
+    email: EmailStr
+    role: Literal[UserRole.UNIVERSITY_ADMIN]
+
+
+class InviteSchema(BaseModel):
+    register_url: str
+    invite_body: Union[StudentInviteSchema, TeacherInviteSchema, UniversityInviteSchema]
+
+    model_config = ConfigDict(use_enum_values=True, from_attributes=True)

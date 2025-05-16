@@ -17,11 +17,6 @@ class UniversityModel(Model):
     __tablename__ = "university"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    patronymic: Mapped[str] = mapped_column(String(100), nullable=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     institutes: Mapped[list["InstituteModel"]] = relationship(
         back_populates="university", cascade="all, delete-orphan"

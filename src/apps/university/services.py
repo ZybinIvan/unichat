@@ -29,11 +29,15 @@ from src.apps.university.schemas import (
     InstituteFilter,
     InstituteUpdateSchema, GroupDetailSchema,
 )
+from src.apps.user.models import UniversityAdminModel
+from src.apps.user.repositories import UniversityAdminRepository
 
 
 class UniversityService:
-    def __init__(self, university_repository: UniversityRepository):
+    def __init__(self, university_repository: UniversityRepository,
+                 university_admin_repository: UniversityAdminRepository):
         self.university_repository = university_repository
+        self.university_amin_repository = university_admin_repository
 
     async def create(
             self, request: Request, register_schema: RegisterUniversitySchema
@@ -43,15 +47,27 @@ class UniversityService:
         ):
             raise ValidationError("Пароли не совпадают")
 
-        register_schema.password = pbkdf2_sha256.hash(register_schema.password)
+        hashed_password = pbkdf2_sha256.hash(register_schema.password)
 
-        university: UniversityModel = UniversityModel(
-            **register_schema.model_dump(exclude={"password_repeat"})
+        university = UniversityModel(
+            **register_schema.model_dump(include={"name"})
         )
 
-        return await self.university_repository.create(
+        await self.university_repository.create(
             university, request.state.session
         )
+
+        admin = UniversityAdminModel(
+            password=hashed_password,
+            university_id=university.id,
+            **register_schema.model_dump(include={"first_name", "last_name", "patronymic", "email"})
+        )
+
+        await self.university_amin_repository.create(
+            admin, request.state.session
+        )
+
+        return university
 
 
 class InstituteService:

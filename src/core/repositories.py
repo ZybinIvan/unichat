@@ -1,14 +1,15 @@
-from typing import TypeVar, Generic, Type, Any
+import json
 import logging
-from asyncpg import ForeignKeyViolationError
-from fastapi import HTTPException, status
+from datetime import timedelta
+from typing import TypeVar, Generic, Type, Any
+
 import sqlalchemy.exc
+from fastapi_filter.contrib.sqlalchemy import Filter
+from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi_filter.contrib.sqlalchemy import Filter
 
 from src.core.exceptions import (
-    AlreadyExistsException,
     MultipleObjectsFoundException,
     NotFoundException,
     OperationFailedException,
@@ -17,6 +18,7 @@ from src.core.exceptions import (
 T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
+
 
 class BaseRepository(Generic[T]):
     """Базовый репозиторий для наследования"""
@@ -31,11 +33,11 @@ class BaseRepository(Generic[T]):
             raise OperationFailedException("get_or_none", str(e)) from e
 
     async def list(
-        self,
-        limit: int,
-        skip: int,
-        session: AsyncSession,
-        filters: Filter | None = None,
+            self,
+            limit: int,
+            skip: int,
+            session: AsyncSession,
+            filters: Filter | None = None,
     ) -> list[T]:
         """Получить все объекты"""
         try:
@@ -95,3 +97,28 @@ class BaseRepository(Generic[T]):
             raise MultipleObjectsFoundException(self.model.__name__, kwargs) from e
         except Exception as e:
             raise OperationFailedException("get_by", str(e)) from e
+
+
+class BaseRedisRepository:
+    key_prefix: str
+
+    def __init__(self, client: Redis):
+        self.client = client
+
+    def _full_key(self, key: str) -> str:
+        return f"{self.key_prefix}:{key}"
+
+    async def get(self, key: str) -> dict | None:
+        full_key = self._full_key(key)
+        try:
+            data = await self.client.get(full_key)
+            return json.loads(data)
+        except Exception as e:
+            logger.exception(e)
+
+    async def set(self, key: str, value: dict, ttl: timedelta) -> bool:
+        full_key = self._full_key(key)
+        try:
+            return await self.client.set(full_key, json.dumps(value), ex=ttl)
+        except Exception as e:
+            logger.exception(e)

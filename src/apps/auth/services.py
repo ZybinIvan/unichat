@@ -1,16 +1,20 @@
 import hashlib
 import logging
+import uuid
 from datetime import timedelta, timezone, datetime
 from typing import List, Any
+from uuid import UUID
 
 import jwt
 from fastapi import Request
+from fastapi_mail import MessageSchema, MessageType, FastMail
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.apps.auth.models import RefreshTokenModel
-from src.apps.auth.repositories import RefreshTokenRepository
-from src.apps.auth.schemas import AccessTokenPayloadSchema, RefreshTokenPayloadSchema
+from src.apps.auth.repositories import RefreshTokenRepository, InviteRedisRepository
+from src.apps.auth.schemas import AccessTokenPayloadSchema, RefreshTokenPayloadSchema, InviteSchema
+from src.apps.user.repositories import UserRepository
 from src.config import Settings
 
 logger = logging.getLogger(__name__)
@@ -24,12 +28,12 @@ class RefreshTokenService:  #
         return await self.repository.get_or_none(id, session)
 
     async def list(
-        self, limit: int, skip: int, session: AsyncSession
+            self, limit: int, skip: int, session: AsyncSession
     ) -> List[RefreshTokenModel]:
         return await self.repository.list(limit, skip, session)
 
     async def create(
-        self, refresh_token: str, session: AsyncSession
+            self, refresh_token: str, session: AsyncSession
     ) -> RefreshTokenModel:
         return await self.repository.create(refresh_token, session)
 
@@ -51,7 +55,7 @@ class RefreshTokenService:  #
 
 class JWTService:
     def __init__(
-        self, refresh_token_repository: RefreshTokenService, settings: Settings
+            self, refresh_token_repository: RefreshTokenService, settings: Settings
     ):
         self.refresh_token_repository = refresh_token_repository
         self.config = settings.jwt
@@ -79,7 +83,7 @@ class JWTService:
         return self._create_token(payload, new_expiration_time)
 
     async def create_refresh_token(
-        self, payload: RefreshTokenPayloadSchema, session: AsyncSession
+            self, payload: RefreshTokenPayloadSchema, session: AsyncSession
     ) -> str:
         new_expiration_time = datetime.now(timezone.utc) + timedelta(
             days=self.config.refresh_token_expiration_days
@@ -100,3 +104,59 @@ class JWTService:
         return jwt.decode(
             jwt=token, key=self.config.secret_key, algorithms=self.config.algorithms
         )
+
+
+class InviteService:
+    INVITE_TTL = timedelta(minutes=1)
+
+    def __init__(self,
+                 invite_repository: InviteRedisRepository,
+                 user_repository: UserRepository,
+                 settings: Settings):
+        self.invite_repository = invite_repository
+        self.user_repository = user_repository
+        self.fm = FastMail(settings.email)
+
+    async def _create_invite(
+            self,
+            request: Request,
+            invite_body: BaseModel
+    ) -> UUID:
+        try:
+            if await self.user_repository.get_by(session=request.state.session, email=invite_body.email):
+                raise ValueError("Пользователь уже зарегистрирован")
+        except:
+            pass
+
+        invite_id = uuid.uuid4()
+
+        await self.invite_repository.set(
+            key=str(invite_id),
+            value=invite_body.model_dump(),
+            ttl=self.INVITE_TTL
+        )
+
+        return invite_id
+
+    async def _send_email_invite(self, invite_schema: InviteSchema, invite_id: UUID) -> None:
+        invite_link = f"{invite_schema.register_url}{invite_id}"
+        message = MessageSchema(
+            subject="Приглашение на платформу",
+            recipients=[invite_schema.invite_body.email],
+            body=f"<p>Перейдите по <a href='{invite_link}'>ссылке</a> {invite_link}, чтобы зарегистрироваться. Ссылка активна в течение 7 дней.</p>",
+            subtype=MessageType.html
+        )
+        print("message", message)
+        return await self.fm.send_message(message)
+
+    async def invite(
+            self,
+            request: Request,
+            invite_schema: InviteSchema
+    ):
+        invite_id = await self._create_invite(request, invite_schema.invite_body)
+        await self._send_email_invite(invite_schema, invite_id)
+
+
+    async def get_invite_info(self, invite_id: str) -> ...:
+        return await self.invite_repository.get(invite_id)

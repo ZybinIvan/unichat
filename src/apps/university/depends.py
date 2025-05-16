@@ -31,12 +31,14 @@ from src.apps.university.use_cases import (
     UpdateGroupUseCase,
     UpdateInstituteUseCase,
 )
+from src.apps.user.repositories import UniversityAdminRepository
 
 # 1. Провайдер для всех компонентов вашего модуля University
 university_provider = Provider(scope=Scope.REQUEST)
 
 # — регистрация репозиториев —
 university_provider.provide(UniversityRepository)
+university_provider.provide(UniversityAdminRepository)
 university_provider.provide(InstituteRepository)
 university_provider.provide(DepartmentRepository)
 university_provider.provide(GroupRepository)

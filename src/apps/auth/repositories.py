@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.apps.auth.models import RefreshTokenModel
-from src.core.repositories import BaseRepository
+from src.core.repositories import BaseRepository, BaseRedisRepository
 
 
 class RefreshTokenRepository(BaseRepository[RefreshTokenModel]):
@@ -14,3 +14,7 @@ class RefreshTokenRepository(BaseRepository[RefreshTokenModel]):
         await session.commit()
         await session.refresh(obj)
         return obj
+
+
+class InviteRedisRepository(BaseRedisRepository):
+    key_prefix = "invite"

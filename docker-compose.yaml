@@ -15,15 +15,6 @@ services:
     depends_on:
       - db
     env_file: .env
-    develop:
-      watch:
-        - action: sync
-          path: ./web
-          target: /src/web
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: package.json
   db:
     container_name: unichat_db
     image: postgres:15-alpine
@@ -40,9 +31,15 @@ services:
     image: redis:latest
     env_file: .env
     ports:
-      - 6379:6379
+      - 6381:6379
     volumes:
       - ./redisdata:/data
+    entrypoint: >
+      sh -c "
+        echo 'Redis user:  '$REDIS_USER;
+        echo 'Redis pass:  '$REDIS_PASSWORD;
+        exec docker-entrypoint.sh redis-server --requirepass \"${REDIS_PASSWORD}\"
+      "
     deploy:
       resources:
         limits:

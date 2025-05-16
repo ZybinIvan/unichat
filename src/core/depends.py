@@ -1,6 +1,6 @@
 from dishka import Provider, Scope, make_async_container
 from dishka.integrations.fastapi import FastapiProvider
-
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -9,12 +9,10 @@ from sqlalchemy.ext.asyncio import (
 )
 from src.config import Settings
 from src.core.db import SQLALCHEMY_DATABASE_URL, get_session as get_db_session
+from fastapi import BackgroundTasks
 
-# Провайдер для "core" модуля
+
 core_provider = Provider(scope=Scope.REQUEST)
-
-# Фабрика для Settings
-# Используем отдельную функцию, чтобы Dishka не пытался инжектить параметры конструктора Settings
 
 
 def provide_settings() -> Settings:
@@ -25,6 +23,7 @@ core_provider.provide(provide_settings, scope=Scope.APP)
 
 # Создание движка БД
 async_engine: AsyncEngine = create_async_engine(SQLALCHEMY_DATABASE_URL)
+
 
 # Фабрика для AsyncEngine
 
@@ -42,6 +41,7 @@ async_session = async_sessionmaker(
     class_=AsyncSession,
 )
 
+
 # Фабрика для sessionmaker
 
 
@@ -54,6 +54,20 @@ core_provider.provide(provide_async_sessionmaker, scope=Scope.APP)
 # Регистрация фабрики сессий для инъекции AsyncSession в use-case'ы
 # get_db_session: async def get_db_session() -> AsyncGenerator[AsyncSession, None]
 core_provider.provide(get_db_session)
+
+
+def provide_redis_client(settings: Settings) -> Redis:
+    return Redis(
+        host=settings.redis.host,
+        port=settings.redis.port,
+        username=settings.redis.username,
+        password=settings.redis.password,
+        decode_responses=True,  # если нужно сразу получать str вместо bytes
+    )
+
+
+core_provider.provide(provide_redis_client, scope=Scope.APP)
+
 
 # Сборка контейнера с интеграцией FastAPI
 container = make_async_container(

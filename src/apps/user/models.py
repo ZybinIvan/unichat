@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.apps.user.enums import UserRole
 from src.core.db import Model, TimestampMixin
 
 if TYPE_CHECKING:
@@ -20,7 +21,8 @@ class UserModel(Model, TimestampMixin):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     avatar_path: Mapped[str] = mapped_column(String(255), nullable=True)
 
-    role: Mapped[str] = mapped_column("role", String(50), nullable=False)
+    role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole, name="role"), nullable=False,
+                                           default=UserRole.USER)
 
     __mapper_args__ = {
         'polymorphic_identity': 'user',
@@ -43,7 +45,7 @@ class TeacherModel(UserModel):
     department: Mapped["DepartmentModel"] = relationship(back_populates="teachers")
 
     __mapper_args__ = {
-        'polymorphic_identity': 'teacher',
+        'polymorphic_identity': UserRole.TEACHER.value,
     }
 
 
@@ -65,5 +67,19 @@ class StudentModel(UserModel):
     group: Mapped["GroupModel"] = relationship(back_populates="students")
 
     __mapper_args__ = {
-        'polymorphic_identity': 'student',
+        'polymorphic_identity': UserRole.STUDENT.value,
+    }
+
+
+class UniversityAdminModel(UserModel):
+    __tablename__ = "university_admin"
+    id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
+    )
+    university_id: Mapped[int] = mapped_column(
+        ForeignKey("university.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": UserRole.UNIVERSITY_ADMIN.value,
     }
