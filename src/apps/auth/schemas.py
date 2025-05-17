@@ -50,6 +50,6 @@ class UniversityInviteSchema(BaseModel):
 
 class InviteSchema(BaseModel):
     register_url: str
-    invite_body: Union[StudentInviteSchema, TeacherInviteSchema, UniversityInviteSchema]
+    invite_body: Union[StudentInviteSchema, TeacherInviteSchema]
 
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)

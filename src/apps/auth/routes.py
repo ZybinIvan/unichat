@@ -53,9 +53,8 @@ async def register_university(
         request: Request,
         register_university_schema: RegisterUniversitySchema,
         use_case: FromDishka[UniversityRegisterUseCase],
-        invite_id: str = Query(...),
 ):
-    return await use_case(request, register_university_schema, invite_id)
+    return await use_case(request, register_university_schema)
 
 
 @auth_routes.post("/register_teacher", response_model=TeacherResponseSchema, status_code=201)

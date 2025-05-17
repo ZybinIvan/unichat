@@ -127,18 +127,12 @@ class RotationTokenUseCase:
 
 
 class UniversityRegisterUseCase:
-    def __init__(self, university_service: UniversityService, invite_service: InviteService):
+    def __init__(self, university_service: UniversityService):
         self.university_service = university_service
-        self.invite_service = invite_service
 
     async def __call__(
-            self, request: Request, register_schema: RegisterUniversitySchema, invite_id: str
+            self, request: Request, register_schema: RegisterUniversitySchema
     ) -> UniversityResponseSchema:
-        invite_info = await self.invite_service.get_invite_info(invite_id)
-
-        if not invite_info or invite_info.get("role", None) != UserRole.UNIVERSITY_ADMIN:
-            raise HTTPException(status_code=400, detail="Неверный invite_id")
-
         created_university: UniversityModel = await self.university_service.create(
             request, register_schema
         )
