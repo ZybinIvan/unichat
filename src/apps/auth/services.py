@@ -160,10 +160,10 @@ class InviteService:
     ) -> str | None:
         invite_id = await self._create_invite(request, invite_schema.invite_body)
 
-        if invite_schema.invite_body.role == UserRole.STUDENT:
-            return await self._make_invite_link(invite_schema.register_url, invite_id)
+        # if invite_schema.invite_body.role == UserRole.STUDENT:
+        return await self._make_invite_link(invite_schema.register_url, invite_id)
 
-        await self._send_email_invite(invite_schema, invite_id)
+        # await self._send_email_invite(invite_schema, invite_id)
 
     async def get_invite_info(self, invite_id: str) -> dict | None:
         return await self.invite_repository.get(invite_id)
