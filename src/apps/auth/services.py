@@ -140,7 +140,7 @@ class InviteService:
         return invite_id
 
     async def _make_invite_link(self, register_url, invite_id) -> str:
-        return f"{register_url}{invite_id}"
+        return f"{register_url}?invite_id={invite_id}"
 
     async def _send_email_invite(self, invite_schema: InviteSchema, invite_id: UUID) -> None:
         invite_link = self._make_invite_link(invite_schema.register_url, invite_id)
