@@ -10,13 +10,15 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from src.core.db import Model
 
 if TYPE_CHECKING:
-    from src.apps.user.models import TeacherModel, StudentModel
+    from src.apps.user.models import TeacherModel, StudentModel, UniversityAdminModel
 
 
 class UniversityModel(Model):
     __tablename__ = "university"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+
+    admin: Mapped["UniversityAdminModel"] = relationship(back_populates="university")
 
     institutes: Mapped[list["InstituteModel"]] = relationship(
         back_populates="university", cascade="all, delete-orphan"

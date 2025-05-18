@@ -1,13 +1,14 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import String, ForeignKey, Enum as SQLEnum
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.apps.user.enums import UserRole
 from src.core.db import Model, TimestampMixin
 
 if TYPE_CHECKING:
-    from src.apps.university.models import DepartmentModel, GroupModel
+    from src.apps.university.models import DepartmentModel, GroupModel, UniversityModel
 
 
 class UserModel(Model, TimestampMixin):
@@ -48,6 +49,10 @@ class TeacherModel(UserModel):
         'polymorphic_identity': UserRole.TEACHER.value,
     }
 
+    @hybrid_property
+    def university_id(self) -> int:
+        return self.department.institute.university.id
+
 
 class StudentModel(UserModel):
     __tablename__ = "student"
@@ -70,6 +75,10 @@ class StudentModel(UserModel):
         'polymorphic_identity': UserRole.STUDENT.value,
     }
 
+    @hybrid_property
+    def university_id(self) -> int:
+        return self.group.department.institute.university.id
+
 
 class UniversityAdminModel(UserModel):
     __tablename__ = "university_admin"
@@ -79,6 +88,7 @@ class UniversityAdminModel(UserModel):
     university_id: Mapped[int] = mapped_column(
         ForeignKey("university.id", ondelete="CASCADE"), nullable=False, unique=True
     )
+    university: Mapped["UniversityModel"] = relationship(back_populates="admin")
 
     __mapper_args__ = {
         "polymorphic_identity": UserRole.UNIVERSITY_ADMIN.value,

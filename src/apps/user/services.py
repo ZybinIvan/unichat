@@ -6,8 +6,9 @@ from hmac import compare_digest
 from typing import Any
 
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from pydantic import ValidationError
+from pydantic import ValidationError, EmailStr
 from fastapi import Request
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.apps.university.schemas import RegisterTeacherSchema, RegisterStudentSchema
 from src.apps.user.models import UserModel, TeacherModel, StudentModel

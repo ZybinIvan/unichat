@@ -19,6 +19,7 @@ class LoginSchema(BaseModel):
 class AccessTokenPayloadSchema(BaseModel):
     user_id: int = Field(alias="id")
     role: UserRole
+    university_id: int
 
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)
 
