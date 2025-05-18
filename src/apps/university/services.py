@@ -77,7 +77,8 @@ class InstituteService:
     async def create(
             self, request: Request, create_schema: InstituteCreateSchema
     ) -> InstituteModel:
-        institute: InstituteModel = InstituteModel(**create_schema.model_dump())
+        institute: InstituteModel = InstituteModel(university_id=request.state.user.university_id,
+                                                   **create_schema.model_dump())
         return await self.institute_repository.create(institute, request.state.session)
 
     async def get(self, request: Request, institute_id: int) -> InstituteModel:

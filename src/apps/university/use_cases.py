@@ -27,7 +27,7 @@ class CreateInstituteUseCase:
         self.institute_service = institute_service
 
     async def __call__(
-        self, request: Request, create_schema: InstituteCreateSchema
+            self, request: Request, create_schema: InstituteCreateSchema
     ) -> InstituteResponseSchema:
         created_institute: InstituteModel = await self.institute_service.create(
             request, create_schema
@@ -50,7 +50,7 @@ class ListInstitutesUseCase:
         self.service = service
 
     async def __call__(
-        self, request: Request, limit: int, skip: int, filters: InstituteFilter
+            self, request: Request, limit: int, skip: int, filters: InstituteFilter
     ):
         return await self.service.list(request, limit, skip, filters)
 
@@ -60,7 +60,7 @@ class UpdateInstituteUseCase:
         self.service = service
 
     async def __call__(
-        self, request: Request, institute_id: int, update_schema: InstituteUpdateSchema
+            self, request: Request, institute_id: int, update_schema: InstituteUpdateSchema
     ):
         return await self.service.update(request, institute_id, update_schema)
 
@@ -86,7 +86,7 @@ class ListDepartmentsUseCase:
         self.service = service
 
     async def __call__(
-        self, request: Request, limit: int, skip: int, filters: DepartmentFilter
+            self, request: Request, limit: int, skip: int, filters: DepartmentFilter
     ):
         return await self.service.list(request, limit, skip, filters)
 
@@ -96,10 +96,10 @@ class UpdateDepartmentUseCase:
         self.service = service
 
     async def __call__(
-        self,
-        request: Request,
-        department_id: int,
-        update_schema: DepartmentUpdateSchema,
+            self,
+            request: Request,
+            department_id: int,
+            update_schema: DepartmentUpdateSchema,
     ):
         return await self.service.update(request, department_id, update_schema)
 
@@ -117,7 +117,7 @@ class CreateDepartmentUseCase:
         self.department_service = department_service
 
     async def __call__(
-        self, request: Request, create_schema: DepartmentCreateSchema
+            self, request: Request, create_schema: DepartmentCreateSchema
     ) -> DepartmentResponseSchema:
         department: DepartmentModel = await self.department_service.create(
             request, create_schema
@@ -130,7 +130,7 @@ class CreateGroupUseCase:
         self.group_service = group_service
 
     async def __call__(
-        self, request: Request, create_schema: GroupCreateSchema
+            self, request: Request, create_schema: GroupCreateSchema
     ) -> GroupResponseSchema:
         group: GroupModel = await self.group_service.create(request, create_schema)
         return GroupResponseSchema.model_validate(group, from_attributes=True)
@@ -149,7 +149,7 @@ class ListGroupsUseCase:
         self.service = service
 
     async def __call__(
-        self, request: Request, limit: int, skip: int, filters: GroupFilter
+            self, request: Request, limit: int, skip: int, filters: GroupFilter
     ):
         return await self.service.list(request, limit, skip, filters)
 
@@ -159,7 +159,7 @@ class UpdateGroupUseCase:
         self.service = service
 
     async def __call__(
-        self, request: Request, group_id: int, update_schema: GroupUpdateSchema
+            self, request: Request, group_id: int, update_schema: GroupUpdateSchema
     ):
         return await self.service.update(request, group_id, update_schema)
 

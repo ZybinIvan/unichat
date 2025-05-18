@@ -38,7 +38,6 @@ class UniversityResponseSchema(BaseModel):
 
 
 class InstituteCreateSchema(BaseModel):
-    university_id: int
     name: str
 
 

@@ -69,6 +69,8 @@ class JWTService:
             key=self.config.secret_key,
             algorithm=self.config.algorithms[0],
         )
+
+        print("SECREY_KET", self.config.secret_key)
         return encoded_jwt
 
     @staticmethod
