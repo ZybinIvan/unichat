@@ -49,7 +49,8 @@ class BaseRepository(Generic[T]):
             result = await session.execute(stmt)
             return result.scalars().all()
         except Exception as e:
-            raise OperationFailedException("list", str(e)) from e
+            logger.exception(e)
+            raise OperationFailedException("list", str(e))
 
     async def create(self, obj: T, session: AsyncSession) -> T:
         """Добавить новый объект в базу"""

@@ -37,3 +37,8 @@ psql:
 .PHONY: db-logs
 db-logs:
 	docker logs ${DB_CONTAINER}
+
+
+.PHONY: create-app
+create-app:
+	${EXEC} ${APP_CONTAINER} python -m src.core.scripts.make_app

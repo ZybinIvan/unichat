@@ -1,8 +1,8 @@
 from dishka import Provider, Scope, make_async_container
 from dishka.integrations.fastapi import FastapiProvider
 
+from src.apps.university.providers import university_provider
 from src.core.depends import core_provider
-from src.apps.university.depends import university_provider
 from src.apps.user.repositories import UserRepository, TeacherRepository, StudentRepository, UniversityAdminRepository
 from src.apps.user.services import UserService, TeacherService, StudentService
 from src.apps.auth.repositories import RefreshTokenRepository, InviteRedisRepository
@@ -43,12 +43,3 @@ auth_provider.provide(StudentRegisterUseCase)
 auth_provider.provide(InviteUseCase)
 auth_provider.provide(InviteInfoUseCase)
 
-# Сборка контейнера Dishka (core + university + auth)
-container = make_async_container(
-    core_provider,
-    university_provider,
-    auth_provider,
-    FastapiProvider(),
-)
-
-__all__ = ["container"]

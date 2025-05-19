@@ -1,11 +1,18 @@
+from typing import Union
+
+from dishka import FromDishka
+from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Request
 
-from src.apps.user.depends import UserServiceDepends
-from src.apps.user.schemas import UserRegisterSchema, UserResponseSchema
+from src.apps.user.schemas import UserDetailResponseSchema, TeacherDetailResponseSchema, StudentDetailResponseSchema
+from src.apps.user.use_cases import GetUserUseCase
+from src.middleware import AuthMiddlewareDepends
 
-user_routes = APIRouter()
+user_routes = APIRouter(route_class=DishkaRoute)
 
 
-@user_routes.post("/register")
-async def create(request: Request, register_schema: UserRegisterSchema, service: UserServiceDepends) -> UserResponseSchema:
-    return await service.create(request, register_schema)
+@user_routes.get("", response_model=Union[
+    TeacherDetailResponseSchema, StudentDetailResponseSchema, UserDetailResponseSchema],
+                 dependencies=[AuthMiddlewareDepends])
+async def get(request: Request, use_case: FromDishka[GetUserUseCase]):
+    return await use_case(request)

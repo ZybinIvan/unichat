@@ -7,10 +7,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
+from src.apps.classroom.models import classroom_group_association
 from src.core.db import Model
 
 if TYPE_CHECKING:
     from src.apps.user.models import TeacherModel, StudentModel, UniversityAdminModel
+    from src.apps.classroom.models import ClassroomModel
+
 
 
 class UniversityModel(Model):
@@ -79,4 +82,9 @@ class GroupModel(Model):
     department: Mapped["DepartmentModel"] = relationship(back_populates="groups")
     students: Mapped[list["StudentModel"]] = relationship(
         back_populates="group", cascade="all, delete-orphan"
+    )
+    classrooms: Mapped[list["ClassroomModel"]] = relationship(
+        "ClassroomModel",
+        secondary=classroom_group_association,
+        back_populates="groups",
     )

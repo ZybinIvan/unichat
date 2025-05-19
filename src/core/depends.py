@@ -12,7 +12,7 @@ from src.core.db import SQLALCHEMY_DATABASE_URL, get_session as get_db_session
 from fastapi import BackgroundTasks
 
 
-core_provider = Provider(scope=Scope.REQUEST)
+core_provider = Provider(scope=Scope.APP)
 
 
 def provide_settings() -> Settings:
@@ -62,19 +62,8 @@ def provide_redis_client(settings: Settings) -> Redis:
         port=settings.redis.port,
         username=settings.redis.username,
         password=settings.redis.password,
-        decode_responses=True,  # если нужно сразу получать str вместо bytes
+        decode_responses=True,
     )
 
 
 core_provider.provide(provide_redis_client, scope=Scope.APP)
-
-
-# Сборка контейнера с интеграцией FastAPI
-container = make_async_container(
-    core_provider,
-    FastapiProvider(),
-)
-
-__all__ = [
-    "container",
-]

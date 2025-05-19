@@ -1,12 +1,16 @@
+from dishka import make_async_container
 from fastapi import FastAPI
-from dishka.integrations.fastapi import setup_dishka, DishkaRoute
+from dishka.integrations.fastapi import setup_dishka, DishkaRoute, FastapiProvider
 from fastapi.openapi.utils import get_openapi
 
+from src.apps.university.providers import university_provider
+from src.apps.user.providers import user_provider
+from src.core.depends import core_provider
 from src.core.exception_handlers import already_exists_exception_handler, multiple_found_exception_handler, \
     not_found_exception_handler, operation_failed_exception_handler
 from src.core.exceptions import AlreadyExistsException, MultipleObjectsFoundException, NotFoundException, \
     OperationFailedException
-from src.apps.auth.depends import container as dishka_container
+from src.apps.auth.depends import auth_provider
 from src.middleware import apply_middleware
 from src.router import apply_routes
 
@@ -40,7 +44,15 @@ def custom_openapi(self):
 def create_app() -> FastAPI:
     app = FastAPI(debug=True, route_class=DishkaRoute)
 
-    setup_dishka(container=dishka_container, app=app)
+    container = make_async_container(
+        core_provider,
+        university_provider,
+        auth_provider,
+        user_provider,
+        FastapiProvider(),
+    )
+
+    setup_dishka(container=container, app=app)
     app = apply_middleware(app)
     app = apply_routes(app)
 
