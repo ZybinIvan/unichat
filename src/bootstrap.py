@@ -19,7 +19,7 @@ def custom_openapi(self):
     if self.openapi_schema:
         return self.openapi_schema
     openapi_schema = get_openapi(
-        title="MediaIS API",
+        title="Unichat API",
         version="1.0.0",
         routes=self.routes,
     )

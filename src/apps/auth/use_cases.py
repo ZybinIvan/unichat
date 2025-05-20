@@ -116,7 +116,6 @@ class RotationTokenUseCase:
 
             await self.refresh_token_service.delete(request, refresh_token_from_db.id)
 
-            print("request.state.user.university_id", request.state.user.university_id)
 
             return TokenSchema(
                 access_token=access_token,
