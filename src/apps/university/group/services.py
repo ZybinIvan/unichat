@@ -18,8 +18,8 @@ class GroupService:
 
     async def get(self, request: Request, group_id: int) -> GroupDetailSchema:
         group = await self.group_repository.get_detail(group_id, request.state.session)
-        return GroupDetailSchema(id=group.id, name=group.name, institute_name=group.department.institute.name,
-                                 department_name=group.department.name)
+        return GroupDetailSchema(id=group.id, name=group.name, institute=group.department.institute,
+                                 department=group.department)
 
     async def list(self, request: Request, limit: int, skip: int, filters: GroupFilter) -> GroupListResponseSchema:
         items, count = await self.group_repository.list(

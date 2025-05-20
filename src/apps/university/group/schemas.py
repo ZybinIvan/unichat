@@ -3,6 +3,8 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Query
 
+from src.apps.university.department.schemas import DepartmentResponseSchema
+from src.apps.university.institute.schemas import InstituteResponseSchema
 from src.apps.university.models import GroupModel, DepartmentModel, InstituteModel
 
 
@@ -29,8 +31,8 @@ class GroupListResponseSchema(BaseModel):
 class GroupDetailSchema(BaseModel):
     id: int
     name: str
-    institute_name: str
-    department_name: str
+    institute: InstituteResponseSchema
+    department: DepartmentResponseSchema
 
     model_config = ConfigDict(from_attributes=True)
 

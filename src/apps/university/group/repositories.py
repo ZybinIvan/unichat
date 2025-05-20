@@ -24,6 +24,7 @@ class GroupRepository(BaseRepository[GroupModel]):
                 selectinload(self.model.department)
                 .selectinload(DepartmentModel.institute)
             )
+            .where(self.model.id == id)
         )
         result = await session.execute(stmt)
         try:
