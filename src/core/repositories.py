@@ -132,6 +132,7 @@ class BaseRepository(Generic[T]):
         """Обновить уже существующий объект"""
         try:
             session.add(obj)
+            await session.flush()
             await session.refresh(obj)
             return obj
         except Exception as e:
