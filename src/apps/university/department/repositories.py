@@ -20,7 +20,7 @@ class DepartmentRepository(BaseRepository[DepartmentModel]):
             .options(
                 # при выборке сразу подтягиваем институт
                 selectinload(self.model.institute)
-            )
+            ).where(self.model.id == id)
         )
         result = await session.execute(stmt)
         try:

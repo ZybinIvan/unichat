@@ -17,8 +17,8 @@ class InstituteService:
         return await self.institute_repository.create(institute, request.state.session)
 
     async def get(self, request: Request, institute_id: int) -> InstituteModel:
-        return await self.institute_repository.get_by(
-            request.state.session, id=institute_id
+        return await self.institute_repository.get(
+            institute_id, request.state.session
         )
 
     async def list(

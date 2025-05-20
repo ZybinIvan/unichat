@@ -8,13 +8,26 @@ from sqlalchemy.orm import selectinload
 from typing_extensions import override
 
 from src.apps.university.models import InstituteModel, DepartmentModel
-from src.core.exceptions import OperationFailedException
+from src.core.exceptions import OperationFailedException, NotFoundException
 from src.core.repositories import BaseRepository
 
 logger = logging.getLogger(__name__)
 
+
 class InstituteRepository(BaseRepository[InstituteModel]):
     model = InstituteModel
+
+    async def get(self, institute_id: int, session: AsyncSession) -> InstituteModel:
+        stmt = (
+            select(InstituteModel)
+            .options(selectinload(InstituteModel.university))
+            .where(InstituteModel.id == institute_id)
+        )
+        result = await session.execute(stmt)
+        institute: InstituteModel | None = result.scalar_one_or_none()
+        if not institute:
+            raise NotFoundException(f"Institute {institute_id} not found")
+        return institute
 
     async def list(
             self,
@@ -59,4 +72,3 @@ class InstituteRepository(BaseRepository[InstituteModel]):
 
         except Exception as e:
             raise OperationFailedException("list", str(e)) from e
-

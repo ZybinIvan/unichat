@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Query
 
 from src.apps.university.department.schemas import DepartmentResponseSchema
-from src.apps.university.institute.schemas import InstituteResponseSchema
+from src.apps.university.institute.schemas import InstituteResponseSchema, InstituteSimpleSchema
 from src.apps.university.models import GroupModel, DepartmentModel, InstituteModel
 
 
@@ -31,7 +31,6 @@ class GroupListResponseSchema(BaseModel):
 class GroupDetailSchema(BaseModel):
     id: int
     name: str
-    institute: InstituteResponseSchema
     department: DepartmentResponseSchema
 
     model_config = ConfigDict(from_attributes=True)

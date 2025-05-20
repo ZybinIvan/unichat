@@ -1,7 +1,7 @@
 from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, ConfigDict
 
-from src.apps.university.institute.schemas import InstituteResponseSchema
+from src.apps.university.institute.schemas import InstituteResponseSchema, InstituteSimpleSchema
 from src.apps.university.models import DepartmentModel
 
 
@@ -10,16 +10,9 @@ class DepartmentCreateSchema(BaseModel):
     name: str
 
 
-class InstituteSchema(BaseModel):
-    id: int
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 class DepartmentResponseSchema(BaseModel):
     id: int
-    institute: InstituteSchema
+    institute: InstituteSimpleSchema
     name: str
 
     model_config = ConfigDict(from_attributes=True)
@@ -35,7 +28,7 @@ class DepartmentListResponseSchema(BaseModel):
 class DepartmentDetailSchema(BaseModel):
     id: int
     name: str
-    institute: InstituteResponseSchema
+    institute: InstituteSimpleSchema
 
     model_config = ConfigDict(from_attributes=True)
 

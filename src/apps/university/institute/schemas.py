@@ -9,6 +9,13 @@ class InstituteCreateSchema(BaseModel):
     name: str
 
 
+class InstituteSimpleSchema(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class InstituteResponseSchema(BaseModel):
     id: int
     name: str
