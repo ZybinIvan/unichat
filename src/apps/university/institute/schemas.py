@@ -2,6 +2,7 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, ConfigDict
 
 from src.apps.university.models import InstituteModel
+from src.apps.university.schemas import UniversityResponseSchema
 
 
 class InstituteCreateSchema(BaseModel):
@@ -11,7 +12,7 @@ class InstituteCreateSchema(BaseModel):
 class InstituteResponseSchema(BaseModel):
     id: int
     name: str
-    university_id: int
+    university: UniversityResponseSchema
     model_config = ConfigDict(from_attributes=True)
 
 

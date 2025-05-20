@@ -15,7 +15,7 @@ class GroupCreateSchema(BaseModel):
 
 class GroupResponseSchema(BaseModel):
     id: int
-    department_id: int
+    department: DepartmentResponseSchema
     name: str
 
     model_config = ConfigDict(from_attributes=True)

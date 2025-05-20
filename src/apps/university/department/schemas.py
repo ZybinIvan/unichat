@@ -10,10 +10,18 @@ class DepartmentCreateSchema(BaseModel):
     name: str
 
 
+class InstituteSchema(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class DepartmentResponseSchema(BaseModel):
     id: int
-    institute_id: int
+    institute: InstituteSchema
     name: str
+
     model_config = ConfigDict(from_attributes=True)
 
 
