@@ -45,7 +45,7 @@ async def list_departments(
 
 
 @department_router.patch(
-    "/departments/{department_id}", response_model=DepartmentResponseSchema
+    "/departments/{department_id}", status_code=204
 )
 async def update_department(
         request: Request,

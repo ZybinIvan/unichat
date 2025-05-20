@@ -24,7 +24,7 @@ async def create_institute(
 
 
 @institute_router.get(
-    "/institutes/{institute_id}", response_model=InstituteResponseSchema
+    "/institutes/{institute_id}", status_code=204
 )
 async def get_institute(
         request: Request,

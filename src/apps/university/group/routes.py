@@ -41,7 +41,7 @@ async def list_groups(
     return await use_case(request, limit, skip, filters)
 
 
-@group_router.patch("/groups/{group_id}", response_model=GroupResponseSchema)
+@group_router.patch("/groups/{group_id}", status_code=204)
 async def update_group(
         request: Request,
         group_id: int,
