@@ -30,23 +30,3 @@ class GroupRepository(BaseRepository[GroupModel]):
             return result.scalar_one()
         except NoResultFound as e:
             raise NotFoundException(self.model.__name__, {"id": id}) from e
-
-    async def list(
-            self,
-            limit: int,
-            skip: int,
-            session: AsyncSession,
-            filters: Filter | None = None,
-    ) -> list[GroupModel]:
-        """Получить все объекты"""
-        try:
-            stmt = select(GroupModel).outerjoin(DepartmentModel)
-            if filters:
-                stmt = filters.filter(stmt)
-                stmt = filters.sort(stmt)
-            stmt = stmt.limit(limit).offset(skip)
-            result = await session.execute(stmt)
-            return result.scalars().all()
-        except Exception as e:
-            logger.exception(e)
-            raise OperationFailedException("list", str(e))

@@ -4,9 +4,10 @@ from fastapi import APIRouter, Request, Query
 from fastapi_filter import FilterDepends
 
 from src.apps.university.group.schemas import GroupCreateSchema, GroupResponseSchema, GroupDetailSchema, GroupFilter, \
-    GroupUpdateSchema
+    GroupUpdateSchema, GroupListResponseSchema
 from src.apps.university.group.use_cases import CreateGroupUseCase, RetrieveGroupUseCase, ListGroupsUseCase, \
     UpdateGroupUseCase, DeleteGroupUseCase
+from src.middleware import AuthMiddlewareDepends
 
 group_router = APIRouter(route_class=DishkaRoute, tags=["Group"])
 
@@ -29,7 +30,7 @@ async def get_group(
     return await use_case(request, group_id)
 
 
-@group_router.get("/groups", response_model=list[GroupResponseSchema])
+@group_router.get("/groups", response_model=GroupListResponseSchema, dependencies=[AuthMiddlewareDepends])
 async def list_groups(
         request: Request,
         use_case: FromDishka[ListGroupsUseCase],

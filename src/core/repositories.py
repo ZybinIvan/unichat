@@ -1,13 +1,14 @@
 import json
 import logging
 from datetime import timedelta
-from typing import TypeVar, Generic, Type, Any
+from typing import TypeVar, Generic, Type, Any, Tuple
 
 import sqlalchemy.exc
 from fastapi_filter.contrib.sqlalchemy import Filter
 from redis.asyncio import Redis
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import InstrumentedAttribute
 
 from src.core.exceptions import (
     MultipleObjectsFoundException,
@@ -38,19 +39,84 @@ class BaseRepository(Generic[T]):
             skip: int,
             session: AsyncSession,
             filters: Filter | None = None,
-    ) -> list[T]:
-        """Получить все объекты"""
+            **service_filters: Any,
+    ) -> Tuple[list[T], int]:
+        """
+        Универсальный list:
+        - service_filters: «вшитые» фильтры (например university_id или цепочки через __)
+        - filters: fastapi-filter для полей самой модели
+        Возвращает:
+          - items: список моделей limit/skip с учётом всех фильтров
+          - total: общее число записей, где применены **все** фильтры (service + user), но без пагинации
+        """
         try:
+            # 1) Считаем total с учётом service_filters + filters
+            total_stmt = select(func.count()).select_from(self.model)
+
+            # 1.1) «вшитые» фильтры
+            for key, val in service_filters.items():
+                total_stmt = total_stmt.where(self._build_filter(self.model, key, val))
+            # 1.2) фильтры из fastapi-filter
+            if filters:
+                total_stmt = filters.filter(total_stmt)
+
+            total: int = (await session.execute(total_stmt)).scalar_one()
+
+            # 2) Основной запрос за записями
             stmt = select(self.model)
+
+            # 2.1) service_filters
+            for key, val in service_filters.items():
+                stmt = stmt.where(self._build_filter(self.model, key, val))
+            # 2.2) user-filters + сортировка
             if filters:
                 stmt = filters.filter(stmt)
                 stmt = filters.sort(stmt)
+
+            # 2.3) пагинация
             stmt = stmt.limit(limit).offset(skip)
-            result = await session.execute(stmt)
-            return result.scalars().all()
+            items = (await session.execute(stmt)).scalars().all()
+
+            return items, total
+
         except Exception as e:
-            logger.exception(e)
-            raise OperationFailedException("list", str(e))
+            raise OperationFailedException("list", str(e)) from e
+
+    def _build_filter(
+            self,
+            model_cls: type,
+            key: str,
+            value: Any,
+    ):
+        """
+        Рекурсивно строит условие:
+        - для простого ключа 'field': model_cls.field == value
+        - для вложенного 'rel1__rel2__...__field':
+          model_cls.rel1.has(... rel2.has(field=value))
+        """
+        parts = key.split("__")
+        if len(parts) == 1:
+            attr = getattr(model_cls, parts[0], None)
+            if not isinstance(attr, InstrumentedAttribute):
+                raise AttributeError(f"{model_cls.__name__} has no column {parts[0]}")
+            return attr == value
+
+        # вложенные отношения
+        *rels, field = parts
+
+        def nest(cls, path: list[str]):
+            rel_name = path[0]
+            rel_attr = getattr(cls, rel_name, None)
+            if not isinstance(rel_attr, InstrumentedAttribute):
+                raise AttributeError(f"{cls.__name__} has no relationship {rel_name}")
+            # если следующий элемент — последний (поле)
+            if len(path) == 2:
+                return rel_attr.has(**{path[1]: value})
+            # иначе — продолжаем вглубь
+            next_cls = rel_attr.property.mapper.class_
+            return rel_attr.has(nest(next_cls, path[1:]))
+
+        return nest(model_cls, parts)
 
     async def create(self, obj: T, session: AsyncSession) -> T:
         """Добавить новый объект в базу"""

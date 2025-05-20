@@ -1,9 +1,8 @@
 from starlette.requests import Request
 
+from src.apps.university.institute.schemas import InstituteCreateSchema, InstituteFilter, InstituteUpdateSchema
 from src.apps.university.institute.services import InstituteService
 from src.apps.university.models import InstituteModel
-from src.apps.university.schemas import InstituteCreateSchema, InstituteResponseSchema, InstituteFilter, \
-    InstituteUpdateSchema
 
 
 class CreateInstituteUseCase:

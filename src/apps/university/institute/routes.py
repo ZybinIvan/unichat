@@ -5,10 +5,10 @@ from fastapi.params import Query
 from fastapi_filter import FilterDepends
 from starlette.requests import Request
 
+from src.apps.university.institute.schemas import InstituteCreateSchema, InstituteResponseSchema, InstituteFilter, \
+    InstituteUpdateSchema, InstituteListResponseSchema
 from src.apps.university.institute.use_cases import CreateInstituteUseCase, RetrieveInstituteUseCase, \
     ListInstitutesUseCase, UpdateInstituteUseCase, DeleteInstituteUseCase
-from src.apps.university.schemas import InstituteUpdateSchema, InstituteResponseSchema, InstituteCreateSchema, \
-    InstituteFilter
 from src.middleware import AuthMiddlewareDepends
 
 institute_router = APIRouter(route_class=DishkaRoute, tags=["Institute"])
@@ -34,7 +34,7 @@ async def get_institute(
     return await use_case(request, institute_id)
 
 
-@institute_router.get("/institutes", response_model=list[InstituteResponseSchema])
+@institute_router.get("/institutes", response_model=InstituteListResponseSchema, dependencies=[AuthMiddlewareDepends])
 async def list_institutes(
         request: Request,
         use_case: FromDishka[ListInstitutesUseCase],

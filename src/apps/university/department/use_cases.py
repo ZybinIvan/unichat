@@ -1,9 +1,8 @@
 from starlette.requests import Request
 
+from src.apps.university.department.schemas import DepartmentFilter, DepartmentCreateSchema, DepartmentUpdateSchema
 from src.apps.university.department.services import DepartmentService
 from src.apps.university.models import DepartmentModel
-from src.apps.university.schemas import DepartmentFilter, DepartmentUpdateSchema, DepartmentCreateSchema, \
-    DepartmentResponseSchema
 
 
 class RetrieveDepartmentUseCase:

@@ -1,7 +1,8 @@
 from starlette.requests import Request
 
 from src.apps.university.group.repositories import GroupRepository
-from src.apps.university.group.schemas import GroupCreateSchema, GroupDetailSchema, GroupFilter, GroupUpdateSchema
+from src.apps.university.group.schemas import GroupCreateSchema, GroupDetailSchema, GroupFilter, GroupUpdateSchema, \
+    GroupListResponseSchema
 from src.apps.university.models import GroupModel
 
 
@@ -20,10 +21,11 @@ class GroupService:
         return GroupDetailSchema(id=group.id, name=group.name, institute_name=group.department.institute.name,
                                  department_name=group.department.name)
 
-    async def list(self, request: Request, limit: int, skip: int, filters: GroupFilter):
-        return await self.group_repository.list(
-            limit, skip, request.state.session, filters
+    async def list(self, request: Request, limit: int, skip: int, filters: GroupFilter) -> GroupListResponseSchema:
+        items, count = await self.group_repository.list(
+            limit, skip, request.state.session, filters, department__institute__university_id=request.user.university_id
         )
+        return GroupListResponseSchema(total_count=count, data=items)
 
     async def update(
             self, request: Request, group_id: int, update_schema: GroupUpdateSchema

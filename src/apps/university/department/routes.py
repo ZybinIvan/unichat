@@ -4,10 +4,11 @@ from fastapi import APIRouter, Query
 from fastapi_filter import FilterDepends
 from starlette.requests import Request
 
+from src.apps.university.department.schemas import DepartmentCreateSchema, DepartmentDetailSchema, \
+    DepartmentResponseSchema, DepartmentFilter, DepartmentUpdateSchema, DepartmentListResponseSchema
 from src.apps.university.department.use_cases import CreateDepartmentUseCase, RetrieveDepartmentUseCase, \
     ListDepartmentsUseCase, UpdateDepartmentUseCase, DeleteDepartmentUseCase
-from src.apps.university.schemas import DepartmentCreateSchema, DepartmentDetailSchema, DepartmentResponseSchema, \
-    DepartmentFilter, DepartmentUpdateSchema
+from src.middleware import AuthMiddlewareDepends
 
 department_router = APIRouter(route_class=DishkaRoute, tags=["Department"])
 
@@ -32,7 +33,7 @@ async def get_department(
     return await use_case(request, department_id)
 
 
-@department_router.get("/departments", response_model=list[DepartmentResponseSchema])
+@department_router.get("/departments", response_model=DepartmentListResponseSchema, dependencies=[AuthMiddlewareDepends])
 async def list_departments(
         request: Request,
         use_case: FromDishka[ListDepartmentsUseCase],
@@ -52,8 +53,6 @@ async def update_department(
         update_schema: DepartmentUpdateSchema,
         use_case: FromDishka[UpdateDepartmentUseCase],
 ):
-
-
     return await use_case(request, department_id, update_schema)
 
 

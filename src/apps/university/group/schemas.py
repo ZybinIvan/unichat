@@ -16,6 +16,15 @@ class GroupResponseSchema(BaseModel):
     department_id: int
     name: str
 
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GroupListResponseSchema(BaseModel):
+    total_count: int
+    data: list[GroupResponseSchema]
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class GroupDetailSchema(BaseModel):
     id: int
@@ -47,4 +56,3 @@ class GroupFilter(Filter):
     class Constants(Filter.Constants):
         model = GroupModel
         ordering_field_name = "order_by"
-

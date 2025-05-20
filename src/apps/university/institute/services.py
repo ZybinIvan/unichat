@@ -1,8 +1,8 @@
 from starlette.requests import Request
 
 from src.apps.university.institute.repositories import InstituteRepository
+from src.apps.university.institute.schemas import *
 from src.apps.university.models import InstituteModel
-from src.apps.university.schemas import InstituteCreateSchema, InstituteFilter, InstituteUpdateSchema
 
 
 class InstituteService:
@@ -23,10 +23,12 @@ class InstituteService:
 
     async def list(
             self, request: Request, limit: int, skip: int, filters: InstituteFilter
-    ):
-        return await self.institute_repository.list(
-            limit, skip, request.state.session, filters
+    ) -> InstituteListResponseSchema:
+        items, count = await self.institute_repository.list(
+            limit, skip, request.state.session, filters, university_id=request.user.university_id
         )
+
+        return InstituteListResponseSchema(total_count=count, data=items)
 
     async def update(
             self, request: Request, institute_id: int, update_schema: InstituteUpdateSchema

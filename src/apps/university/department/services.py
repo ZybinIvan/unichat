@@ -1,9 +1,8 @@
 from starlette.requests import Request
 
 from src.apps.university.department.repositories import DepartmentRepository
+from src.apps.university.department.schemas import *
 from src.apps.university.models import DepartmentModel
-from src.apps.university.schemas import DepartmentCreateSchema, DepartmentDetailSchema, DepartmentFilter, \
-    DepartmentUpdateSchema
 
 
 class DepartmentService:
@@ -30,10 +29,12 @@ class DepartmentService:
 
     async def list(
             self, request: Request, limit: int, skip: int, filters: DepartmentFilter
-    ):
-        return await self.department_repository.list(
-            limit, skip, request.state.session, filters
+    ) -> DepartmentListResponseSchema:
+        items, count = await self.department_repository.list(
+            limit, skip, request.state.session, filters, institute__university_id=request.user.university_id
         )
+
+        return DepartmentListResponseSchema(data=items, total_count=count)
 
     async def update(
             self,

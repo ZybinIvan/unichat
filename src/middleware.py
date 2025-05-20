@@ -58,7 +58,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 logger.info("AuthMiddleware", request.user)
             except (PyJWTError, ValidationError):
                 logger.exception("JWT validation error")
-                # Если токен некорректен, просрочен или нет поля university_id — молча пропускаем
                 pass
 
         return await call_next(request)
