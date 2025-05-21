@@ -146,6 +146,9 @@ class InviteService:
         elif invite_body.role == UserRole.TEACHER:
             value = (await self.department_service.get(request, invite_body.department_id)).model_dump()
 
+        value["role"] = invite_body.role
+        value["email"] = invite_body.email
+
         is_set = await self.invite_repository.set(
             key=str(invite_id),
             value=value,
