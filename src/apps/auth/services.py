@@ -2,7 +2,7 @@ import hashlib
 import logging
 import uuid
 from datetime import timedelta, timezone, datetime
-from typing import List, Any
+from typing import List, Any, Union
 from uuid import UUID
 
 import jwt
@@ -13,9 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.apps.auth.models import RefreshTokenModel
 from src.apps.auth.repositories import RefreshTokenRepository, InviteRedisRepository
-from src.apps.auth.schemas import AccessTokenPayloadSchema, RefreshTokenPayloadSchema, InviteSchema
+from src.apps.auth.schemas import AccessTokenPayloadSchema, RefreshTokenPayloadSchema, InviteSchema, \
+    TeacherInviteSchema, StudentInviteSchema
+from src.apps.university.department.services import DepartmentService
+from src.apps.university.group.services import GroupService
 from src.apps.user.enums import UserRole
 from src.apps.user.repositories import UserRepository
+from src.apps.user.services import TeacherService, StudentService
 from src.config import Settings
 
 logger = logging.getLogger(__name__)
@@ -114,15 +118,19 @@ class InviteService:
     def __init__(self,
                  invite_repository: InviteRedisRepository,
                  user_repository: UserRepository,
+                 department_service: DepartmentService,
+                 group_service: GroupService,
                  settings: Settings):
         self.invite_repository = invite_repository
         self.user_repository = user_repository
+        self.department_service = department_service
+        self.group_service = group_service
         self.fm = FastMail(settings.email)
 
     async def _create_invite(
             self,
             request: Request,
-            invite_body: BaseModel
+            invite_body: Union[StudentInviteSchema, TeacherInviteSchema]
     ) -> UUID:
         try:
             if await self.user_repository.get_by(session=request.state.session, email=invite_body.email):
@@ -131,12 +139,20 @@ class InviteService:
             pass
 
         invite_id = uuid.uuid4()
+        value = None
 
-        await self.invite_repository.set(
+        if invite_body.role == UserRole.STUDENT:
+            value = (await self.group_service.get(request, invite_body.group_id)).model_dump()
+        elif invite_body.role == UserRole.TEACHER:
+            value = (await self.department_service.get(request, invite_body.department_id)).model_dump()
+
+        is_set = await self.invite_repository.set(
             key=str(invite_id),
-            value=invite_body.model_dump(),
+            value=value,
             ttl=self.INVITE_TTL
         )
+        if not is_set:
+            raise RuntimeError(f"Не удалось сохранить приглашение с id={invite_id}")
 
         return invite_id
 
