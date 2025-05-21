@@ -139,12 +139,12 @@ class InviteService:
             pass
 
         invite_id = uuid.uuid4()
-        value = None
+        value: dict = {}
 
         if invite_body.role == UserRole.STUDENT:
-            value = (await self.group_service.get(request, invite_body.group_id)).model_dump()
+            value["group"] = (await self.group_service.get(request, invite_body.group_id)).model_dump()
         elif invite_body.role == UserRole.TEACHER:
-            value = (await self.department_service.get(request, invite_body.department_id)).model_dump()
+            value["department"] = (await self.department_service.get(request, invite_body.department_id)).model_dump()
 
         value["role"] = invite_body.role
         value["email"] = invite_body.email
